@@ -4,16 +4,22 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_application_1/excercise.dart' as Excercise_Package;
 
+import 'excercise.dart';
+
 class BodyPart extends StatefulWidget {
   const BodyPart(
       {super.key,
       required this.title,
+      required this.excerciseInfo,
+      required this.addExcerciseInfo,
       required this.addBodyPartData,
       required this.bodyPartData,
       required this.duration});
 
   final String title;
   final void Function(BodyPartData) addBodyPartData;
+  final void Function(ExcerciseInfo) addExcerciseInfo;
+  final List<ExcerciseInfo> excerciseInfo;
   final BodyPartData bodyPartData;
   final Duration duration;
 
@@ -25,6 +31,8 @@ class _BodyPartState extends State<BodyPart> {
   String get title => widget.title;
   Duration get duration => widget.duration;
   void Function(BodyPartData) get addBodyPartData => widget.addBodyPartData;
+  void Function(ExcerciseInfo) get addExcerciseInfo => widget.addExcerciseInfo;
+  List<ExcerciseInfo> get excerciseInfo => widget.excerciseInfo;
   BodyPartData? get bodyPartData => widget.bodyPartData;
   late Future<BodyPartData> futureBodyPartData;
   @override
@@ -59,6 +67,14 @@ class _BodyPartState extends State<BodyPart> {
           if (snapshot.hasData) {
             return ListView.builder(itemBuilder: (context, index) {
               return ExcerciseListItem(
+                  addExcerciseInfo: addExcerciseInfo,
+                  excerciseInfo: excerciseInfo.firstWhere(
+                      (element) =>
+                          element.excercise.getName ==
+                          snapshot.data!.getExcercises[index].getName,
+                      orElse: () => ExcerciseInfo(
+                          excercise: snapshot.data!.getExcercises[index],
+                          sets: [])),
                   duration: duration,
                   excercise: snapshot.data!.getExcercises[index]);
             });
@@ -71,8 +87,14 @@ class _BodyPartState extends State<BodyPart> {
 
 class ExcerciseListItem extends StatefulWidget {
   const ExcerciseListItem(
-      {super.key, required this.excercise, required this.duration});
+      {super.key,
+      required this.excercise,
+      required this.duration,
+      required this.excerciseInfo,
+      required this.addExcerciseInfo});
   final Duration duration;
+  final void Function(ExcerciseInfo) addExcerciseInfo;
+  final ExcerciseInfo excerciseInfo;
   final Excercise excercise;
 
   @override
@@ -80,9 +102,19 @@ class ExcerciseListItem extends StatefulWidget {
 }
 
 class _ExcerciseListItemState extends State<ExcerciseListItem> {
-  bool selected = false;
+  bool applied = false;
   Excercise get excercise => widget.excercise;
   Duration get duration => widget.duration;
+  void Function(ExcerciseInfo) get addExcerciseInfo => widget.addExcerciseInfo;
+  ExcerciseInfo get excerciseInfo => widget.excerciseInfo;
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      applied = excerciseInfo.sets.isNotEmpty;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -91,6 +123,8 @@ class _ExcerciseListItemState extends State<ExcerciseListItem> {
         onTap: () {
           Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => Excercise_Package.ExcerciseWidget(
+                    excerciseInfo: excerciseInfo,
+                    addExcerciseInfo: addExcerciseInfo,
                     excercise: excercise,
                     duration: duration,
                   )));
@@ -100,8 +134,13 @@ class _ExcerciseListItemState extends State<ExcerciseListItem> {
           height: 24,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(5), color: Colors.amber),
-          child: const Icon(Icons.arrow_right_alt_outlined, size: 24),
+              borderRadius: BorderRadius.circular(5),
+              color: applied ? Colors.green : Colors.amber),
+          child: Icon(
+            applied ? Icons.check : Icons.arrow_right_alt_outlined,
+            size: 24,
+            color: applied ? Colors.white : Colors.black,
+          ),
         ),
       ),
       title: Text(excercise.getName),

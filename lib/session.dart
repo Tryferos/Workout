@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/bodyPart.dart';
+import 'package:flutter_application_1/excercise.dart';
 
 class Session extends StatefulWidget {
   const Session({super.key, required this.selectedBodyParts});
@@ -17,6 +18,7 @@ String strDigits(int n) => n.toString().padLeft(2, '0');
 class _SessionState extends State<Session> {
   List<String> get selectedBodyParts => widget.selectedBodyParts;
   List<BodyPartData> bodyPartData = [];
+  List<ExcerciseInfo> excerciseInfo = [];
   Timer? timer;
   Duration duration = const Duration(seconds: 0);
   @override
@@ -34,6 +36,18 @@ class _SessionState extends State<Session> {
   void dispose() {
     timer?.cancel();
     super.dispose();
+  }
+
+  void addExcerciceInfo(ExcerciseInfo newExcerciseInfo) {
+    setState(() {
+      int index = excerciseInfo.indexWhere(
+          (element) => element.excercise == newExcerciseInfo.excercise);
+      if (index != -1) {
+        excerciseInfo[index] = newExcerciseInfo;
+        return;
+      }
+      excerciseInfo.add(newExcerciseInfo);
+    });
   }
 
   void addBodyPartData(BodyPartData newBodyPartData) {
@@ -127,6 +141,8 @@ class _SessionState extends State<Session> {
                 BodyPart(
                     title: bodyPart,
                     duration: duration,
+                    excerciseInfo: excerciseInfo,
+                    addExcerciseInfo: addExcerciceInfo,
                     addBodyPartData: addBodyPartData,
                     bodyPartData: bodyPartData.firstWhere(
                         (element) => element.bodyPart == bodyPart,
