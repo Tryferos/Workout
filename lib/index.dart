@@ -91,7 +91,16 @@ class Workout extends StatelessWidget {
         addAutomaticKeepAlives: false,
         children: [
           for (var bodyPart in bodyParts)
-            BodyPartItem(title: bodyPart, onTap: onTap)
+            Column(
+              children: [
+                BodyPartItem(title: bodyPart, onTap: onTap),
+                const Divider(
+                  color: Colors.black,
+                  height: 0,
+                  thickness: 0.2,
+                )
+              ],
+            )
         ],
       ),
       floatingActionButton: FloatingActionButton(

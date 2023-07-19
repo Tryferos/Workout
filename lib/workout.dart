@@ -49,7 +49,7 @@ class _BodyPartItemState extends State<BodyPartItem> {
             padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
             decoration: BoxDecoration(
               color: getBackgroundColor(),
-              border: Border.all(color: getTextColor(), width: 0.2),
+              // border: Border.all(color: getTextColor(), width: 0.2),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
