@@ -62,10 +62,17 @@ class Excercise {
   });
 
   factory Excercise.fromJson(Map<String, dynamic> json) {
+    try {
+      json = json['data'][0];
+    } catch (Exception) {
+      json = json;
+    }
     List<String> aliases = [];
-    json['aliases'].forEach((el) {
-      aliases.add(el);
-    });
+    if (json['aliases'] is List) {
+      json['aliases'].forEach((el) {
+        aliases.add(el);
+      });
+    }
     return Excercise(
       name: json['name'],
       nameUrl: json['name_url'],

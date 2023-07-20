@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/bodyPart.dart';
 import 'package:flutter_application_1/session.dart';
+import 'package:http/http.dart' as http;
+
+import 'main.dart';
 
 class ExcerciseWidget extends StatefulWidget {
   const ExcerciseWidget(
@@ -113,7 +117,7 @@ class _ExcerciseWidgetState extends State<ExcerciseWidget> {
                       Navigator.of(context).pop();
                     },
                     child: const Text(
-                      'Done',
+                      'Save',
                       style: TextStyle(
                           color: Colors.blue,
                           fontSize: 16,
@@ -124,11 +128,6 @@ class _ExcerciseWidgetState extends State<ExcerciseWidget> {
           ),
         ),
       ],
-      // floatingActionButton: FloatingActionButton(
-      //     onPressed: () {
-      //       Navigator.of(context).pop();
-      //     },
-      //     child: const Icon(Icons.save)),
       bottomNavigationBar: BottomNavigationBar(
         elevation: 4,
         selectedItemColor: Colors.white,
@@ -208,6 +207,11 @@ class _ExcerciseInputsState extends State<ExcerciseInputs> {
       }
       selectEachWeight = excercise.eachWeightIsDifferent;
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   void handleEachRep() {
@@ -515,6 +519,45 @@ class ExcerciseInfo {
     return false;
   }
 
+  Map<String, dynamic> toMap(int sessionId) {
+    return {
+      'excerciseName': excercise.name,
+      'sessionId': sessionId,
+    };
+  }
+
+  static Future<Excercise> fetchExcercise(String name) async {
+    final res = await http.get(Uri.parse(
+        'https://strengthlevel.com/api/exercises?limit=64&exercise.fields=category,name_url,bodypart,name,count,aliases,icon_url&name=$name&standard=yes'));
+    if (res.statusCode == 200) {
+      Excercise data = Excercise.fromJson(jsonDecode(res.body));
+      return data;
+    } else {
+      throw Exception('Failed to load excercise data');
+    }
+  }
+
+  static Future<List<ExcerciseInfo>> excercisesInfo(int sessionId) async {
+    final db = await database;
+    if (db == null) return [];
+    final List<Map<String, dynamic>> eMap = await db
+        .query('excerciseInfo', where: 'sessionId = ?', whereArgs: [sessionId]);
+
+    List<ExcerciseInfo> excercisesInfo = [];
+
+    for (var e in eMap) {
+      Excercise excercise = await fetchExcercise(e['excerciseName']);
+      final List<Map<String, dynamic>> setMap = await db
+          .query('Sets', where: 'excerciseInfoId = ?', whereArgs: [e['id']]);
+      List<Set> sets = [];
+      for (var s in setMap) {
+        sets.add(Set(reps: s['reps'], weight: s['weight']));
+      }
+      excercisesInfo.add(ExcerciseInfo(excercise: excercise, sets: sets));
+    }
+    return excercisesInfo;
+  }
+
   @override
   String toString() {
     return "ExcerciseInfo: ${excercise.name}, ${sets.toString()}";
@@ -526,6 +569,15 @@ class Set {
   double weight;
   final int? rest;
   Set({required this.reps, required this.weight, this.rest});
+
+  Map<String, dynamic> toMap(int excerciseInfoId) {
+    return {
+      'reps': reps,
+      'weight': weight,
+      'excerciseInfoId': excerciseInfoId,
+    };
+  }
+
   @override
   String toString() {
     return "Set: $reps reps, $weight kg";

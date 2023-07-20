@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/bodyPart.dart';
+import 'package:flutter_application_1/database.dart' as db;
 import 'package:flutter_application_1/excercise.dart';
 
 class Session extends StatefulWidget {
@@ -20,6 +21,7 @@ class _SessionState extends State<Session> {
   List<BodyPartData> bodyPartData = [];
   List<ExcerciseInfo> excerciseInfo = [];
   Timer? timer;
+  bool dialogOpen = false;
   Duration duration = const Duration(seconds: 0);
   @override
   void initState() {
@@ -38,7 +40,7 @@ class _SessionState extends State<Session> {
     super.dispose();
   }
 
-  void addExcerciceInfo(ExcerciseInfo newExcerciseInfo, bool cancel) {
+  void addExcerciseInfo(ExcerciseInfo newExcerciseInfo, bool cancel) {
     setState(() {
       int index = excerciseInfo.indexWhere(
           (element) => element.excercise == newExcerciseInfo.excercise);
@@ -65,8 +67,21 @@ class _SessionState extends State<Session> {
   List<Widget> getTabs() {
     List<Widget> tabs = [];
     for (var i = 0; i < selectedBodyParts.length; i++) {
+      int totalExcercises = 0;
+      if (bodyPartData.length > i) {
+        for (var element in bodyPartData[i].excercises) {
+          if (excerciseInfo.any((excerciseInfo) =>
+              excerciseInfo.excercise.name == element.name)) {
+            totalExcercises++;
+          }
+        }
+      }
+      String addon = '';
+      if (totalExcercises > 0) {
+        addon = '($totalExcercises)';
+      }
       tabs.add(Tab(
-        text: selectedBodyParts[i],
+        text: '${selectedBodyParts[i]} $addon',
       ));
     }
     return tabs;
@@ -95,6 +110,15 @@ class _SessionState extends State<Session> {
                 ),
               ],
             ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.stop, color: Colors.white),
+                onPressed: () {
+                  // Navigator.of(context).pop();
+                  showAlertDialog(context, excerciseInfo, duration.inSeconds);
+                },
+              ),
+            ],
             bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(45),
                 child: Column(
@@ -147,7 +171,7 @@ class _SessionState extends State<Session> {
                     title: bodyPart,
                     duration: duration,
                     excerciseInfo: excerciseInfo,
-                    addExcerciseInfo: addExcerciceInfo,
+                    addExcerciseInfo: addExcerciseInfo,
                     addBodyPartData: addBodyPartData,
                     bodyPartData: bodyPartData.firstWhere(
                         (element) => element.bodyPart == bodyPart,
@@ -156,5 +180,48 @@ class _SessionState extends State<Session> {
             ],
           )),
     );
+  }
+
+  showAlertDialog(
+      BuildContext context, List<ExcerciseInfo> data, int duration) {
+    // set up the buttons
+    Widget cancelButton = TextButton(
+      child: const Text("Cancel"),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+    Widget removeButton = TextButton(
+      child: const Text("Remove"),
+      onPressed: () {},
+    );
+    Widget saveButton = TextButton(
+      child: const Text("Save"),
+      onPressed: () {
+        db.Session session = db.Session(
+            date: DateTime.now().millisecondsSinceEpoch, duration: duration);
+        session.excerciseInfo = data;
+        db.Session.insertSession(session);
+        print('saved');
+      },
+    );
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: const Text("Session Workout"),
+      content: const Text(
+          "You can choose to save the workout or remove it from the history."),
+      actions: [
+        cancelButton,
+        removeButton,
+        saveButton,
+      ],
+    );
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+    // show the dialog
   }
 }
