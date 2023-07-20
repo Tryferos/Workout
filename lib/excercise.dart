@@ -162,7 +162,9 @@ class _ExcerciseWidgetState extends State<ExcerciseWidget> {
               editSets: editSets,
               excercise: excerciseInfo)
           : currentIndex == 2
-              ? const ExcerciseHistoryWidget()
+              ? ExcerciseHistoryWidget(
+                  excercise: excercise,
+                )
               : const NotesWidget(),
     );
   }
@@ -540,6 +542,12 @@ class _ExcerciseInputsState extends State<ExcerciseInputs> {
   }
 }
 
+class ExcerciseHistory {
+  ExcerciseHistory({required this.date, required this.sets});
+  final List<Set> sets;
+  final int date;
+}
+
 class ExcerciseInfo {
   final Excercise excercise;
   final List<Set> sets;
@@ -551,6 +559,28 @@ class ExcerciseInfo {
       for (var set in sets) {
         if (set == sets[i]) continue;
         if (set.reps != sets[i].reps) return true;
+      }
+    }
+    return false;
+  }
+
+  static bool isEachRepDifferent(List<Set> sets) {
+    if (sets.length <= 1) return false;
+    for (var i = 0; i < sets.length; i++) {
+      for (var set in sets) {
+        if (set == sets[i]) continue;
+        if (set.reps != sets[i].reps) return true;
+      }
+    }
+    return false;
+  }
+
+  static bool isEachWeightDifferent(List<Set> sets) {
+    if (sets.length <= 1) return false;
+    for (var i = 0; i < sets.length; i++) {
+      for (var set in sets) {
+        if (set == sets[i]) continue;
+        if (set.weight != sets[i].weight) return true;
       }
     }
     return false;
@@ -583,6 +613,34 @@ class ExcerciseInfo {
     } else {
       throw Exception('Failed to load excercise data');
     }
+  }
+
+  static Future<List<ExcerciseHistory>> excercisesInfoHistory(
+      String name) async {
+    final db = await database;
+    if (db == null) return [];
+    final List<Map<String, dynamic>> eMap = await db.query(
+      'excerciseInfo',
+      where: 'excerciseName = ?',
+      whereArgs: [name],
+    );
+
+    List<ExcerciseHistory> excerciseHistory = [];
+
+    for (var e in eMap) {
+      final List<Map<String, dynamic>> smap = await db
+          .query('session', where: 'id = ?', whereArgs: [e['sessionId']]);
+      print(smap);
+      final List<Map<String, dynamic>> setMap = await db
+          .query('Sets', where: 'excerciseInfoId = ?', whereArgs: [e['id']]);
+      int date = setMap.isNotEmpty ? smap[0]['date'] : 0;
+      List<Set> sets = [];
+      for (var s in setMap) {
+        sets.add(Set(reps: s['reps'], weight: s['weight']));
+      }
+      excerciseHistory.add(ExcerciseHistory(date: date, sets: sets));
+    }
+    return excerciseHistory;
   }
 
   static Future<List<ExcerciseInfo>> excercisesInfo(int sessionId) async {
