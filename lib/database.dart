@@ -43,7 +43,8 @@ class Session {
     if (db == null) return [];
 
     // Query the table for all The Dogs.
-    final List<Map<String, dynamic>> sessionMap = await db.query('session');
+    final List<Map<String, dynamic>> sessionMap =
+        await db.query('session', orderBy: 'date DESC');
     List<List<ExcerciseInfo>> excerciseInfo = [];
     for (var session in sessionMap) {
       excerciseInfo.add(await ExcerciseInfo.excercisesInfo(session['id']));

@@ -5,6 +5,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 Future<Database>? database;
+List<Session> sessions = [];
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,13 +22,30 @@ void main() async {
     version: 1,
   );
   runApp(const MyApp());
-  print(await Session.sessions());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyApp extends StatefulWidget {
+  const MyApp({
+    super.key,
+  });
 
-  // This widget is the root of your application.
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool loading = true;
+  @override
+  void initState() {
+    super.initState();
+    Session.sessions().then((data) {
+      sessions = data;
+      setState(() {
+        loading = false;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -38,16 +56,13 @@ class MyApp extends StatelessWidget {
       ),
       home: Scaffold(
         appBar: AppBar(),
-        body: const Index(),
+        body: !loading
+            ? const Index()
+            : const Center(child: CircularProgressIndicator()),
         floatingActionButton: FloatingActionButton(
           onPressed: () {},
           child: const Icon(Icons.add),
         ),
-        // bottomNavigationBar: BottomNavigationBar(items: [
-        //   const BottomNavigationBarItem(icon: const Icon(Icons.home), label: 'Home'),
-        //   const BottomNavigationBarItem(icon: const Icon(Icons.home), label: 'Home'),
-        //   const BottomNavigationBarItem(icon: const Icon(Icons.home), label: 'Home'),
-        // ]),
       ),
     );
   }

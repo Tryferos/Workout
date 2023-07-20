@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/main.dart';
 
 class BodyPartItem extends StatefulWidget {
   const BodyPartItem({super.key, required this.title, required this.onTap});
@@ -11,6 +12,37 @@ class BodyPartItem extends StatefulWidget {
 class _BodyPartItemState extends State<BodyPartItem> {
   bool value = false;
   String get title => widget.title;
+  String lastWorkout = '';
+
+  @override
+  void initState() {
+    super.initState();
+    int index = sessions.indexWhere((element) => element.excerciseInfo!
+        .where((element) => element.excercise.bodyPart == title)
+        .isNotEmpty);
+    if (index == -1) return;
+    int millis = sessions[index].date;
+    DateTime date = DateTime.now();
+    int timePassed = ((date.millisecondsSinceEpoch - millis) / 1000).round();
+
+    setState(() {
+      int hoursPassed = (timePassed / 3600).round();
+      if (hoursPassed < 24) {
+        lastWorkout = '${hoursPassed}h ago';
+        return;
+      }
+      int daysPassed = (hoursPassed / 24).round();
+      if (daysPassed < 7) {
+        lastWorkout = '${daysPassed}d ago';
+        return;
+      }
+      int weeksPassed = (daysPassed / 7).round();
+      if (weeksPassed < 4) {
+        lastWorkout = '${weeksPassed}w ago';
+        return;
+      }
+    });
+  }
 
   Color getBackgroundColor() {
     if (value == true) {
@@ -80,7 +112,7 @@ class _BodyPartItemState extends State<BodyPartItem> {
                 Container(
                   height: 80,
                   alignment: Alignment.bottomRight,
-                  child: Text('1w ago',
+                  child: Text(lastWorkout,
                       style: TextStyle(
                           color: getTextColor(), fontWeight: FontWeight.w400)),
                 )

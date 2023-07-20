@@ -50,6 +50,7 @@ class Excercise {
   final List<String> aliases;
   final String iconUrl;
   final String category;
+  final String bodyPart;
   final int id;
 
   Excercise({
@@ -57,6 +58,7 @@ class Excercise {
     required this.nameUrl,
     required this.aliases,
     required this.iconUrl,
+    required this.bodyPart,
     required this.category,
     required this.id,
   });
@@ -75,6 +77,7 @@ class Excercise {
     }
     return Excercise(
       name: json['name'],
+      bodyPart: json['bodypart'],
       nameUrl: json['name_url'],
       aliases: aliases,
       iconUrl: json['icon_url'],
@@ -125,6 +128,7 @@ class _BodyPartState extends State<BodyPart> {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return ListView.builder(itemBuilder: (context, index) {
+              if (index >= snapshot.data!.excercises.length) return null;
               return ExcerciseListItem(
                   addExcerciseInfo: addExcerciseInfo,
                   excerciseInfo: excerciseInfo.firstWhere(

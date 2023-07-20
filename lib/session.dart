@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/bodyPart.dart';
 import 'package:flutter_application_1/database.dart' as db;
 import 'package:flutter_application_1/excercise.dart';
+import 'package:flutter_application_1/main.dart';
 
 class Session extends StatefulWidget {
   const Session({super.key, required this.selectedBodyParts});
@@ -193,7 +194,10 @@ class _SessionState extends State<Session> {
     );
     Widget removeButton = TextButton(
       child: const Text("Remove"),
-      onPressed: () {},
+      onPressed: () {
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+      },
     );
     Widget saveButton = TextButton(
       child: const Text("Save"),
@@ -202,7 +206,12 @@ class _SessionState extends State<Session> {
             date: DateTime.now().millisecondsSinceEpoch, duration: duration);
         session.excerciseInfo = data;
         db.Session.insertSession(session);
-        print('saved');
+        setState(() {
+          sessions.add(session);
+        });
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
       },
     );
     // set up the AlertDialog

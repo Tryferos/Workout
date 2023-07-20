@@ -3,6 +3,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/bodyPart.dart';
+import 'package:flutter_application_1/history.dart';
+import 'package:flutter_application_1/notes.dart';
 import 'package:flutter_application_1/session.dart';
 import 'package:http/http.dart' as http;
 
@@ -159,7 +161,9 @@ class _ExcerciseWidgetState extends State<ExcerciseWidget> {
               category: excercise.category,
               editSets: editSets,
               excercise: excerciseInfo)
-          : const Placeholder(),
+          : currentIndex == 2
+              ? const ExcerciseHistoryWidget()
+              : const NotesWidget(),
     );
   }
 }
@@ -189,10 +193,25 @@ class _ExcerciseInputsState extends State<ExcerciseInputs> {
   bool selectEachRep = false;
   bool selectEachWeight = false;
   String get category => widget.category;
+  ExcerciseInfo? latestWorkout;
 
   @override
   void initState() {
     super.initState();
+    try {
+      latestWorkout = sessions
+          .where((el) => el.excerciseInfo!
+              .where((element) =>
+                  element.excercise.name == excercise.excercise.name)
+              .isNotEmpty)
+          .first
+          .excerciseInfo!
+          .where(
+              (element) => element.excercise.name == excercise.excercise.name)
+          .first;
+    } catch (e) {
+      latestWorkout = null;
+    }
     setState(() {
       if (excercise.sets.isNotEmpty) {
         numberOfReps = excercise.sets[0].reps;
@@ -228,7 +247,6 @@ class _ExcerciseInputsState extends State<ExcerciseInputs> {
         }
         sets[i].reps = numberOfReps;
       }
-      print(sets);
     }
     editSets(sets);
   }
@@ -487,6 +505,36 @@ class _ExcerciseInputsState extends State<ExcerciseInputs> {
                     ))
               ],
             )),
+        Opacity(
+            opacity: latestWorkout == null ? 0 : 1,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 16),
+              child: TextButton.icon(
+                style: TextButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    elevation: 2,
+                    shadowColor: Colors.grey,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10))),
+                icon: const Icon(Icons.settings, color: Colors.blue),
+                label: const Text("Select latest workout's preset",
+                    style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500)),
+                onPressed: () {
+                  setState(() {
+                    sets = latestWorkout!.sets;
+                    numberOfSets = sets.length;
+                    numberOfReps = sets[0].reps;
+                    numberOfWeight = sets[0].weight;
+                    selectEachRep = latestWorkout!.eachRepIsDifferent;
+                    selectEachWeight = latestWorkout!.eachWeightIsDifferent;
+                    editSets(sets);
+                  });
+                },
+              ),
+            ))
       ],
     );
   }
