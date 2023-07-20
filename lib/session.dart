@@ -38,14 +38,19 @@ class _SessionState extends State<Session> {
     super.dispose();
   }
 
-  void addExcerciceInfo(ExcerciseInfo newExcerciseInfo) {
+  void addExcerciceInfo(ExcerciseInfo newExcerciseInfo, bool cancel) {
     setState(() {
       int index = excerciseInfo.indexWhere(
           (element) => element.excercise == newExcerciseInfo.excercise);
       if (index != -1) {
+        if (cancel == true) {
+          excerciseInfo.removeAt(index);
+          return;
+        }
         excerciseInfo[index] = newExcerciseInfo;
         return;
       }
+      if (cancel == true) return;
       excerciseInfo.add(newExcerciseInfo);
     });
   }

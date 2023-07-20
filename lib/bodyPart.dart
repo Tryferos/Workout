@@ -1,12 +1,19 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter_application_1/excercise.dart' as Excercise_Package;
+import 'package:http/http.dart' as http;
 
 import 'excercise.dart';
 
 class BodyPart extends StatefulWidget {
+  final String title;
+
+  final void Function(BodyPartData) addBodyPartData;
+  final void Function(ExcerciseInfo, bool) addExcerciseInfo;
+  final List<ExcerciseInfo> excerciseInfo;
+  final BodyPartData bodyPartData;
+  final Duration duration;
   const BodyPart(
       {super.key,
       required this.title,
@@ -16,50 +23,95 @@ class BodyPart extends StatefulWidget {
       required this.bodyPartData,
       required this.duration});
 
-  final String title;
-  final void Function(BodyPartData) addBodyPartData;
-  final void Function(ExcerciseInfo) addExcerciseInfo;
-  final List<ExcerciseInfo> excerciseInfo;
-  final BodyPartData bodyPartData;
-  final Duration duration;
-
   @override
   State<BodyPart> createState() => _BodyPartState();
 }
 
-class _BodyPartState extends State<BodyPart> {
-  String get title => widget.title;
-  Duration get duration => widget.duration;
-  void Function(BodyPartData) get addBodyPartData => widget.addBodyPartData;
-  void Function(ExcerciseInfo) get addExcerciseInfo => widget.addExcerciseInfo;
-  List<ExcerciseInfo> get excerciseInfo => widget.excerciseInfo;
-  BodyPartData? get bodyPartData => widget.bodyPartData;
-  late Future<BodyPartData> futureBodyPartData;
+class BodyPartData {
+  final String bodyPart;
+  final List<Excercise> excercises;
+  BodyPartData({required this.bodyPart, required this.excercises});
+
+  factory BodyPartData.fromJson(Map<String, dynamic> json, String bodyPart) {
+    List<Excercise> excercises = [];
+    json['data'].forEach((element) {
+      excercises.add(Excercise.fromJson(element));
+    });
+    return BodyPartData(bodyPart: bodyPart, excercises: excercises);
+  }
+  String get getBodyPart => bodyPart;
+
+  List<Excercise> get getExcercises => excercises;
+}
+
+class Excercise {
+  final String name;
+  final String nameUrl;
+  final List<String> aliases;
+  final String iconUrl;
+  final String category;
+  final int id;
+
+  Excercise({
+    required this.name,
+    required this.nameUrl,
+    required this.aliases,
+    required this.iconUrl,
+    required this.category,
+    required this.id,
+  });
+
+  factory Excercise.fromJson(Map<String, dynamic> json) {
+    List<String> aliases = [];
+    json['aliases'].forEach((el) {
+      aliases.add(el);
+    });
+    return Excercise(
+      name: json['name'],
+      nameUrl: json['name_url'],
+      aliases: aliases,
+      iconUrl: json['icon_url'],
+      category: json['category'],
+      id: json['id'],
+    );
+  }
+  get getAliases => aliases;
+  get getCategory => category;
+  get getIconUrl => iconUrl;
+  get getIconUrlColored => iconUrl
+      .replaceFirst("silhouettes", "illustrations")
+      .replaceAll("256", "1000")
+      .replaceFirst(".png", ".jpg");
+  get getName => name;
+
+  get getNameUrl => nameUrl;
+}
+
+class ExcerciseListItem extends StatefulWidget {
+  final Duration duration;
+  final void Function(ExcerciseInfo, bool) addExcerciseInfo;
+  final ExcerciseInfo excerciseInfo;
+  final Excercise excercise;
+  const ExcerciseListItem(
+      {super.key,
+      required this.excercise,
+      required this.duration,
+      required this.excerciseInfo,
+      required this.addExcerciseInfo});
+
   @override
-  void initState() {
-    super.initState();
-    if (bodyPartData == null ||
-        bodyPartData!.getBodyPart != title ||
-        bodyPartData!.getExcercises.isEmpty) {
-      futureBodyPartData = fetchBodyPartData();
-      return;
-    } else {
-      futureBodyPartData = Future.value(bodyPartData);
-    }
-  }
+  State<ExcerciseListItem> createState() => _ExcerciseListItemState();
+}
 
-  Future<BodyPartData> fetchBodyPartData() async {
-    final res = await http.get(Uri.parse(
-        'https://strengthlevel.com/api/exercises?limit=64&exercise.fields=category,name_url,bodypart,count,aliases,icon_url&bodypart=${title}&standard=yes'));
-    if (res.statusCode == 200) {
-      BodyPartData data = BodyPartData.fromJson(jsonDecode(res.body), title);
-      addBodyPartData(data);
-      return data;
-    } else {
-      throw Exception('Failed to load body part data');
-    }
-  }
-
+class _BodyPartState extends State<BodyPart> {
+  late Future<BodyPartData> futureBodyPartData;
+  void Function(BodyPartData) get addBodyPartData => widget.addBodyPartData;
+  void Function(ExcerciseInfo, bool) get addExcerciseInfo =>
+      widget.addExcerciseInfo;
+  BodyPartData? get bodyPartData => widget.bodyPartData;
+  Duration get duration => widget.duration;
+  List<ExcerciseInfo> get excerciseInfo => widget.excerciseInfo;
+  String get title => widget.title;
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<BodyPartData>(
@@ -83,42 +135,50 @@ class _BodyPartState extends State<BodyPart> {
         },
         future: futureBodyPartData);
   }
-}
 
-class ExcerciseListItem extends StatefulWidget {
-  const ExcerciseListItem(
-      {super.key,
-      required this.excercise,
-      required this.duration,
-      required this.excerciseInfo,
-      required this.addExcerciseInfo});
-  final Duration duration;
-  final void Function(ExcerciseInfo) addExcerciseInfo;
-  final ExcerciseInfo excerciseInfo;
-  final Excercise excercise;
+  Future<BodyPartData> fetchBodyPartData() async {
+    final res = await http.get(Uri.parse(
+        'https://strengthlevel.com/api/exercises?limit=64&exercise.fields=category,name_url,bodypart,count,aliases,icon_url&bodypart=$title&standard=yes'));
+    if (res.statusCode == 200) {
+      BodyPartData data = BodyPartData.fromJson(jsonDecode(res.body), title);
+      addBodyPartData(data);
+      return data;
+    } else {
+      throw Exception('Failed to load body part data');
+    }
+  }
 
   @override
-  State<ExcerciseListItem> createState() => _ExcerciseListItemState();
+  void initState() {
+    super.initState();
+    if (bodyPartData == null ||
+        bodyPartData!.getBodyPart != title ||
+        bodyPartData!.getExcercises.isEmpty) {
+      futureBodyPartData = fetchBodyPartData();
+      return;
+    } else {
+      futureBodyPartData = Future.value(bodyPartData);
+    }
+  }
 }
 
 class _ExcerciseListItemState extends State<ExcerciseListItem> {
   bool applied = false;
-  Excercise get excercise => widget.excercise;
+  void Function(ExcerciseInfo, bool) get addExcerciseInfo =>
+      widget.addExcerciseInfo;
   Duration get duration => widget.duration;
-  void Function(ExcerciseInfo) get addExcerciseInfo => widget.addExcerciseInfo;
+  Excercise get excercise => widget.excercise;
   ExcerciseInfo get excerciseInfo => widget.excerciseInfo;
-  @override
-  void initState() {
-    super.initState();
+  void checkApplied(bool value) {
     setState(() {
-      applied = excerciseInfo.sets.isNotEmpty;
+      applied = value;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      tileColor: Color.fromARGB(255, 255, 255, 255),
+      tileColor: const Color.fromARGB(255, 255, 255, 255),
       trailing: GestureDetector(
         onTap: () {
           Navigator.of(context).push(MaterialPageRoute(
@@ -127,6 +187,7 @@ class _ExcerciseListItemState extends State<ExcerciseListItem> {
                     addExcerciseInfo: addExcerciseInfo,
                     excercise: excercise,
                     duration: duration,
+                    checkApplied: checkApplied,
                   )));
         },
         child: Container(
@@ -151,64 +212,12 @@ class _ExcerciseListItemState extends State<ExcerciseListItem> {
       ),
     );
   }
-}
 
-class BodyPartData {
-  final String bodyPart;
-  final List<Excercise> excercises;
-  BodyPartData({required this.bodyPart, required this.excercises});
-
-  String get getBodyPart => bodyPart;
-  List<Excercise> get getExcercises => excercises;
-
-  factory BodyPartData.fromJson(Map<String, dynamic> json, String bodyPart) {
-    List<Excercise> excercises = [];
-    json['data'].forEach((element) {
-      excercises.add(Excercise.fromJson(element));
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      applied = excerciseInfo.sets.isNotEmpty;
     });
-    return BodyPartData(bodyPart: bodyPart, excercises: excercises);
-  }
-}
-
-class Excercise {
-  final String name;
-  final String nameUrl;
-  final List<String> aliases;
-  final String iconUrl;
-  final String category;
-  final int id;
-
-  Excercise({
-    required this.name,
-    required this.nameUrl,
-    required this.aliases,
-    required this.iconUrl,
-    required this.category,
-    required this.id,
-  });
-
-  get getName => name;
-  get getNameUrl => nameUrl;
-  get getAliases => aliases;
-  get getIconUrl => iconUrl;
-  get getCategory => category;
-  get getIconUrlColored => iconUrl
-      .replaceFirst("silhouettes", "illustrations")
-      .replaceAll("256", "1000")
-      .replaceFirst(".png", ".jpg");
-
-  factory Excercise.fromJson(Map<String, dynamic> json) {
-    List<String> aliases = [];
-    json['aliases'].forEach((el) {
-      aliases.add(el);
-    });
-    return Excercise(
-      name: json['name'],
-      nameUrl: json['name_url'],
-      aliases: aliases,
-      iconUrl: json['icon_url'],
-      category: json['category'],
-      id: json['id'],
-    );
   }
 }

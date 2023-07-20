@@ -10,10 +10,12 @@ class ExcerciseWidget extends StatefulWidget {
       required this.excercise,
       required this.duration,
       required this.addExcerciseInfo,
+      required this.checkApplied,
       required this.excerciseInfo});
   final Excercise excercise;
   final Duration duration;
-  final void Function(ExcerciseInfo) addExcerciseInfo;
+  final void Function(bool) checkApplied;
+  final void Function(ExcerciseInfo, bool) addExcerciseInfo;
   final ExcerciseInfo excerciseInfo;
 
   @override
@@ -24,7 +26,9 @@ class _ExcerciseWidgetState extends State<ExcerciseWidget> {
   Excercise get excercise => widget.excercise;
   Duration get prevDuration => widget.duration;
   ExcerciseInfo get excerciseInfo => widget.excerciseInfo;
-  void Function(ExcerciseInfo) get addExcerciseInfo => widget.addExcerciseInfo;
+  void Function(ExcerciseInfo, bool) get addExcerciseInfo =>
+      widget.addExcerciseInfo;
+  void Function(bool) get checkApplied => widget.checkApplied;
   Duration duration = const Duration(seconds: 0);
   int currentIndex = 0;
   Timer? timer;
@@ -41,7 +45,9 @@ class _ExcerciseWidgetState extends State<ExcerciseWidget> {
 
   void editSets(List<Set> newSets) {
     setState(() {
-      addExcerciseInfo(ExcerciseInfo(excercise: excercise, sets: newSets));
+      addExcerciseInfo(
+          ExcerciseInfo(excercise: excercise, sets: newSets), false);
+      checkApplied(newSets.isNotEmpty);
     });
   }
 
@@ -78,11 +84,51 @@ class _ExcerciseWidgetState extends State<ExcerciseWidget> {
         ),
         backgroundColor: Colors.blue,
       ),
-      floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Icon(Icons.save)),
+      persistentFooterButtons: [
+        SizedBox(
+          width: MediaQuery.of(context).size.width,
+          height: 50,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(
+                    onPressed: () {
+                      setState(() {
+                        addExcerciseInfo(excerciseInfo, true);
+                        checkApplied(false);
+                      });
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text(
+                      'Remove',
+                      style: TextStyle(
+                          color: Colors.blue,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700),
+                    )),
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text(
+                      'Done',
+                      style: TextStyle(
+                          color: Colors.blue,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700),
+                    )),
+              ],
+            ),
+          ),
+        ),
+      ],
+      // floatingActionButton: FloatingActionButton(
+      //     onPressed: () {
+      //       Navigator.of(context).pop();
+      //     },
+      //     child: const Icon(Icons.save)),
       bottomNavigationBar: BottomNavigationBar(
         elevation: 4,
         selectedItemColor: Colors.white,
@@ -178,6 +224,7 @@ class _ExcerciseInputsState extends State<ExcerciseInputs> {
         }
         sets[i].reps = numberOfReps;
       }
+      print(sets);
     }
     editSets(sets);
   }
