@@ -70,6 +70,6 @@ class Session {
 
   @override
   String toString() {
-    return 'Session{date: $date, duration: $duration, id: $id, excerciseInfo: $excerciseInfo}';
+    return 'Session{date: $date, duration: $duration, id: $id, excerciseInfo: $excerciseInfo,}';
   }
 }

@@ -13,9 +13,12 @@ void main() async {
     join(await getDatabasesPath(), "excercise_info_database.db"),
     onCreate: (db, version) async {
       await db.execute(
+        'create table if not exists Notes(id integer primary key autoincrement not null, note text, excerciseName text, date integer)',
+      );
+      await db.execute(
           'create table if not exists Sets(id integer primary key autoincrement not null, reps integer, weight double, excerciseInfoId integer, FOREIGN KEY(excerciseInfoId) REFERENCES excerciseInfo(id))');
       await db.execute(
-          "CREATE TABLE if not exists ExcerciseInfo(id integer primary key autoincrement not null, excerciseName text, sessionId integer,FOREIGN KEY(sessionId) REFERENCES Session(id))");
+          "CREATE TABLE if not exists ExcerciseInfo(id integer primary key autoincrement not null, excerciseName text, notes text,sessionId integer,FOREIGN KEY(sessionId) REFERENCES Session(id))");
       return db.execute(
           'create table if not exists Session(id integer primary key autoincrement not null, date integer, duration integer)');
     },

@@ -7,6 +7,7 @@ import 'package:flutter_application_1/history.dart';
 import 'package:flutter_application_1/notes.dart';
 import 'package:flutter_application_1/session.dart';
 import 'package:http/http.dart' as http;
+import 'package:sqflite/sqflite.dart';
 
 import 'main.dart';
 
@@ -37,6 +38,7 @@ class _ExcerciseWidgetState extends State<ExcerciseWidget> {
   void Function(bool) get checkApplied => widget.checkApplied;
   Duration duration = const Duration(seconds: 0);
   int currentIndex = 0;
+
   Timer? timer;
   @override
   void initState() {
@@ -165,7 +167,7 @@ class _ExcerciseWidgetState extends State<ExcerciseWidget> {
               ? ExcerciseHistoryWidget(
                   excercise: excercise,
                 )
-              : const NotesWidget(),
+              : NotesWidget(name: excercise.name),
     );
   }
 }
@@ -613,6 +615,37 @@ class ExcerciseInfo {
     } else {
       throw Exception('Failed to load excercise data');
     }
+  }
+
+  static Future<void> updateNotes(String newNotes, String name) async {
+    final db = await database;
+    if (db == null) return;
+    int id = await db.insert(
+        'Notes',
+        {
+          'excerciseName': name,
+          'note': newNotes,
+          'date': DateTime.now().millisecondsSinceEpoch
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace);
+    print('inserted $id');
+  }
+
+  static Future<String> excerciseNotes(String name) async {
+    final db = await database;
+    if (db == null) return '';
+    final List<Map<String, dynamic>> nMap = await db.query(
+      'Notes',
+      where: 'excerciseName = ?',
+      whereArgs: [name],
+    );
+    print(nMap);
+
+    String notes = '';
+    for (var item in nMap) {
+      notes += item['note'] ?? '';
+    }
+    return notes;
   }
 
   static Future<List<ExcerciseHistory>> excercisesInfoHistory(

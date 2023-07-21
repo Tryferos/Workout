@@ -206,6 +206,7 @@ class _SessionState extends State<Session> {
             date: DateTime.now().millisecondsSinceEpoch, duration: duration);
         session.excerciseInfo = data;
         db.Session.insertSession(session);
+        print(session);
         setState(() {
           sessions.add(session);
         });
