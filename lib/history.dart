@@ -13,7 +13,7 @@ class ExcerciseHistoryWidget extends StatefulWidget {
 
 class _ExcerciseHistoryWidgetState extends State<ExcerciseHistoryWidget> {
   Excercise get excercise => widget.excercise;
-  late Future<List<ExcerciseHistory>> list;
+  Future<List<ExcerciseHistory>>? list;
   @override
   void initState() {
     super.initState();
@@ -21,7 +21,10 @@ class _ExcerciseHistoryWidgetState extends State<ExcerciseHistoryWidget> {
   }
 
   void getHistory() async {
-    list = ExcerciseInfo.excercisesInfoHistory(excercise.name);
+    List<ExcerciseHistory> tmp =
+        await ExcerciseInfo.excercisesInfoHistory(excercise.name);
+    tmp.sort((a, b) => b.date.compareTo(a.date));
+    list = Future.value(tmp);
   }
 
   @override
@@ -29,11 +32,18 @@ class _ExcerciseHistoryWidgetState extends State<ExcerciseHistoryWidget> {
     return FutureBuilder<List<ExcerciseHistory>>(
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return ListView.builder(itemBuilder: (context, index) {
-              if (index >= snapshot.data!.length) return null;
-              return ExcerciseHistoryItem(
-                  history: snapshot.data![index], name: excercise.name);
-            });
+            return ListView.separated(
+                addAutomaticKeepAlives: false,
+                itemCount: snapshot.data!.length + 1,
+                separatorBuilder: (context, index) => const Divider(
+                      color: Colors.grey,
+                      height: 0.3,
+                    ),
+                itemBuilder: (context, index) {
+                  if (index >= snapshot.data!.length) return null;
+                  return ExcerciseHistoryItem(
+                      history: snapshot.data![index], name: excercise.name);
+                });
           }
           return const Center(child: CircularProgressIndicator());
         },
@@ -60,6 +70,16 @@ class _ExcerciseHistoryItemState extends State<ExcerciseHistoryItem> {
   String sets = '';
 
   String strDigits(int n) => n.toString().padLeft(2, '0');
+
+  SizedBox getImage() {
+    return const SizedBox(
+        width: 16,
+        height: 16,
+        child: Image(
+          image: AssetImage('assets/weight-icon-png-16.jpg'),
+          fit: BoxFit.contain,
+        ));
+  }
 
   @override
   void initState() {
@@ -95,48 +115,88 @@ class _ExcerciseHistoryItemState extends State<ExcerciseHistoryItem> {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(top: 10, bottom: 0),
-      height: 70,
-      decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: Colors.grey, width: 0.4))),
-      child: Column(
+      height: 80,
+      child: Row(
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Text(
-                '${history.sets.length} sets',
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-              Container(
-                width: 20,
-                height: 1,
-                color: Colors.grey,
-              ),
-              Text(
-                  '${ExcerciseInfo.isEachRepDifferent(history.sets) ? history.sets.map((e) => e.reps.toString()).join('/') : history.sets[0].reps} reps',
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w500)),
-              Container(
-                width: 20,
-                height: 1,
-                color: Colors.grey,
-              ),
-              Text(
-                  '${ExcerciseInfo.isEachWeightDifferent(history.sets) ? history.sets.map((e) => e.weight.toString()).join('/') : history.sets[0].weight} kg',
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w500)),
-            ],
-          ),
-          Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.only(top: 12),
-            child: Text(
-              '$lastWorkoutDate - $lastWorkout',
-              style: const TextStyle(fontSize: 12),
+          const Expanded(
+              flex: 2,
+              child: Icon(
+                Icons.history_outlined,
+                size: 38,
+                color: Colors.blueAccent,
+              )),
+          Expanded(
+            flex: 8,
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.only(top: 10, bottom: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(lastWorkoutDate,
+                          style: const TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w600)),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 40),
+                        child: Text(lastWorkout,
+                            style: const TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w500)),
+                      )
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 40),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.sports_gymnastics_outlined,
+                            size: 16,
+                            color: Colors.grey,
+                          ),
+                          Text(
+                            ' ${history.sets.length}',
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
+                      Row(children: [
+                        const Icon(
+                          Icons.fitness_center_outlined,
+                          size: 16,
+                          color: Colors.grey,
+                        ),
+                        Text(
+                            ' ${ExcerciseInfo.isEachRepDifferent(history.sets) ? history.sets.map((e) => e.reps.toString()).join('/') : history.sets[0].reps}',
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w500)),
+                      ]),
+                      Row(
+                        children: [
+                          Image.asset(
+                            'assets/weight-icon-png-16.jpg',
+                            width: 15,
+                            height: 15,
+                            color: Colors.grey,
+                          ),
+                          Text(
+                              ' ${ExcerciseInfo.isEachWeightDifferent(history.sets) ? history.sets.map((e) => e.weight.toString()).join('/') : history.sets[0].weight}',
+                              style: const TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          )
+          ),
         ],
       ),
     );

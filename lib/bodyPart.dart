@@ -102,7 +102,11 @@ class ExcerciseListItem extends StatefulWidget {
   final void Function(ExcerciseInfo, bool) addExcerciseInfo;
   final ExcerciseInfo excerciseInfo;
   final Excercise excercise;
-  const ExcerciseListItem(
+  bool applied = false;
+  // set apply(bool value) {
+  //   applied = value;
+  // }
+  ExcerciseListItem(
       {super.key,
       required this.excercise,
       required this.duration,
@@ -174,7 +178,7 @@ class _BodyPartState extends State<BodyPart> {
 }
 
 class _ExcerciseListItemState extends State<ExcerciseListItem> {
-  bool applied = false;
+  bool get applied => widget.applied;
   void Function(ExcerciseInfo, bool) get addExcerciseInfo =>
       widget.addExcerciseInfo;
   Duration get duration => widget.duration;
@@ -182,7 +186,16 @@ class _ExcerciseListItemState extends State<ExcerciseListItem> {
   ExcerciseInfo get excerciseInfo => widget.excerciseInfo;
   void checkApplied(bool value) {
     setState(() {
-      applied = value;
+      // widget.applied = value;
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant ExcerciseListItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.applied == excerciseInfo.sets.isNotEmpty) return;
+    setState(() {
+      widget.applied = excerciseInfo.sets.isNotEmpty;
     });
   }
 
@@ -228,7 +241,7 @@ class _ExcerciseListItemState extends State<ExcerciseListItem> {
   void initState() {
     super.initState();
     setState(() {
-      applied = excerciseInfo.sets.isNotEmpty;
+      widget.applied = excerciseInfo.sets.isNotEmpty;
     });
   }
 }
