@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/landing/charts.dart';
 import 'package:flutter_application_1/landing/profiling.dart';
+import 'package:flutter_application_1/landing/recent.dart';
 
 import '../index.dart';
 
@@ -30,7 +31,14 @@ class _LayoutLandingState extends State<LayoutLanding> {
             SizedBox(
               height: 20,
             ),
+            RecentWorkouts(),
+            SizedBox(
+              height: 20,
+            ),
             ExcercisesChart(),
+            SizedBox(
+              height: 100,
+            )
           ],
         ),
       )),
@@ -47,24 +55,35 @@ class StartWorkoutButton extends StatelessWidget {
       width: MediaQuery.of(context).size.width,
       height: 50,
       child: ElevatedButton(
-        style: ButtonStyle(
-          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-              RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                  side: const BorderSide(color: Colors.blue))),
-          backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
-        ),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const BodyPartSelector()),
-          );
-        },
-        child: const Text(
-          'Start Workout',
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
+          style: ButtonStyle(
+            elevation: MaterialStateProperty.all<double>(3),
+            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    side: const BorderSide(color: Colors.blue))),
+            backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+          ),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const BodyPartSelector()),
+            );
+          },
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              SizedBox(
+                width: 10,
+              ),
+              Text('Start Workout',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold)),
+              Icon(Icons.arrow_right_alt_outlined,
+                  color: Colors.white, size: 32)
+            ],
+          )),
     );
   }
 }
