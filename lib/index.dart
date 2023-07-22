@@ -2,28 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/session.dart';
 import 'package:flutter_application_1/workout.dart';
 
-class Index extends StatelessWidget {
-  const Index({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          TextButton(
-              onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => const BodyPartSelector()));
-              },
-              child: const Text('Start a workout'))
-        ],
-      ),
-    );
-  }
-}
-
 class BodyPartSelector extends StatefulWidget {
   const BodyPartSelector({super.key});
 

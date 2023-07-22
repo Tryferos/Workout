@@ -687,6 +687,28 @@ class ExcerciseInfo {
     return excerciseHistory;
   }
 
+  static Future<Map<String, double>> excercisesFrequent() async {
+    final db = await database;
+    if (db == null) return {};
+    final List<Map<String, dynamic>> eMap = await db.query('excerciseInfo');
+
+    Map<String, double> dataMap = {};
+    print(eMap);
+    for (var item in eMap) {
+      if (!dataMap.containsKey(item['excerciseName'])) {
+        dataMap.putIfAbsent(item['excerciseName'], () => 1);
+        continue;
+      }
+      dataMap.update(item['excerciseName'], (value) => value + 1);
+    }
+    if (dataMap.length > 5) {
+      List<MapEntry<String, double>> li = dataMap.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+      return Map.fromEntries(li.sublist(0, 5));
+    }
+    return dataMap;
+  }
+
   static Future<List<ExcerciseInfo>> excercisesInfo(int sessionId) async {
     final db = await database;
     if (db == null) return [];

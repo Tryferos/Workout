@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/database.dart';
-import 'package:flutter_application_1/index.dart';
+import 'package:flutter_application_1/landing/layout.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -54,18 +54,15 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
+        fontFamily: 'Wotfard',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
         useMaterial3: true,
       ),
       home: Scaffold(
         appBar: AppBar(),
-        body: !loading
-            ? const Index()
-            : const Center(child: CircularProgressIndicator()),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {},
-          child: const Icon(Icons.add),
-        ),
+        body: loading
+            ? const Center(child: CircularProgressIndicator())
+            : const LayoutLanding(),
       ),
     );
   }
