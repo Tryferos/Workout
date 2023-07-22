@@ -74,8 +74,10 @@ class Workout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 70,
+        centerTitle: true,
         title: const Text(
-          "Select Body Parts to train",
+          "Choose your body parts",
           style: TextStyle(color: Colors.white),
         ),
         leading: IconButton(
@@ -85,27 +87,25 @@ class Workout extends StatelessWidget {
           },
         ),
         backgroundColor: Colors.blue,
+        elevation: 2,
       ),
-      body: ListView(
-        scrollDirection: Axis.vertical,
-        addAutomaticKeepAlives: false,
-        children: [
-          for (var bodyPart in bodyParts)
-            Column(
-              children: [
-                BodyPartItem(title: bodyPart, onTap: onTap),
-                const Divider(
-                  color: Colors.black,
-                  height: 0,
-                  thickness: 0.2,
-                )
-              ],
-            )
-        ],
-      ),
+      body: GridView.count(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          crossAxisCount: 2,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          scrollDirection: Axis.vertical,
+          // Generate 100 widgets that display their index in the List.
+          children: List.generate(bodyParts.length, (index) {
+            return BodyPartItem(
+                title: bodyParts[index],
+                onTap: onTap,
+                index: selectedBodyParts.indexOf(bodyParts[index]));
+          })),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.start),
         onPressed: () {
+          if (selectedBodyParts.isEmpty) return;
           Navigator.of(context).push(MaterialPageRoute(
               builder: (context) =>
                   Session(selectedBodyParts: selectedBodyParts)));
@@ -114,3 +114,26 @@ class Workout extends StatelessWidget {
     );
   }
 }
+
+
+// ListView(
+//         scrollDirection: Axis.vertical,
+//         addAutomaticKeepAlives: false,
+//         children: [
+//           for (var bodyPart in bodyParts)
+//             Column(
+//               children: [
+//                 BodyPartItem(
+//                   title: bodyPart,
+//                   onTap: onTap,
+//                   index: selectedBodyParts.indexOf(bodyPart),
+//                 ),
+//                 const Divider(
+//                   color: Colors.black,
+//                   height: 0,
+//                   thickness: 0.2,
+//                 )
+//               ],
+//             )
+//         ],
+//       ),

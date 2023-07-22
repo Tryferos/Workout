@@ -230,7 +230,10 @@ class _ExcerciseListItemState extends State<ExcerciseListItem> {
       ),
       title: Text(excercise.getName),
       subtitle: Text(excercise.getCategory),
-      leading: Image.network(excercise.getIconUrlColored),
+      leading: Hero(
+        tag: 'excerciseIcon${excercise.name}',
+        child: Image.network(excercise.getIconUrlColored),
+      ),
       shape: const Border(
         bottom: BorderSide(color: Colors.grey, width: 0.3),
       ),

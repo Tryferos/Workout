@@ -65,33 +65,36 @@ class _ExcerciseWidgetState extends State<ExcerciseWidget> {
     super.dispose();
   }
 
+  final Color textColor = const Color.fromARGB(255, 42, 5, 77);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 100,
-        elevation: 2,
-        centerTitle: true,
-        title: Column(
-          children: [
-            Text(
-              excercise.name,
-              style: const TextStyle(color: Colors.white),
-            ),
-            Text(
-              "${strDigits(duration.inHours.remainder(60))}h ${strDigits(duration.inMinutes.remainder(60))}m ${strDigits(duration.inSeconds.remainder(60))}s",
-              style: const TextStyle(color: Colors.white, fontSize: 12),
-            ),
-          ],
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-        backgroundColor: Colors.blue,
-      ),
+          toolbarHeight: 100,
+          elevation: 0,
+          centerTitle: true,
+          title: Column(
+            children: [
+              Text(excercise.name,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                  )),
+              Text(
+                "${strDigits(duration.inHours.remainder(60))}h ${strDigits(duration.inMinutes.remainder(60))}m ${strDigits(duration.inSeconds.remainder(60))}s",
+                style: TextStyle(color: textColor, fontSize: 14),
+              ),
+            ],
+          ),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: textColor, size: 28),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          backgroundColor: const Color.fromARGB(255, 255, 255, 255)),
       persistentFooterButtons: [
         SizedBox(
           width: MediaQuery.of(context).size.width,
@@ -325,6 +328,14 @@ class _ExcerciseInputsState extends State<ExcerciseInputs> {
                     Border(bottom: BorderSide(color: Colors.grey, width: 0.3))),
             child: Column(
               children: [
+                Hero(
+                  tag: 'excerciseIcon${excercise.excercise.name}',
+                  child: SizedBox(
+                    height: 100,
+                    child: Image.network(excercise.excercise.getIconUrlColored),
+                  ),
+                ),
+                const Padding(padding: EdgeInsets.only(top: 20)),
                 const Text(
                   'Select number of Sets',
                   style: TextStyle(

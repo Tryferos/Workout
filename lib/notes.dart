@@ -45,7 +45,6 @@ class _NotesWidgetState extends State<NotesWidget> {
                         icon: const Icon(Icons.check,
                             color: Colors.blue, size: 32),
                         onPressed: () async {
-                          print(newNotes);
                           await ExcerciseInfo.updateNotes(
                               newNotes, widget.name);
                           setState(() {

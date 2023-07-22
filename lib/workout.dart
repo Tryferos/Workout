@@ -2,17 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/main.dart';
 
 class BodyPartItem extends StatefulWidget {
-  const BodyPartItem({super.key, required this.title, required this.onTap});
+  const BodyPartItem(
+      {super.key,
+      required this.title,
+      required this.onTap,
+      required this.index});
   final String title;
   final void Function(String) onTap;
+  final int index;
   @override
   State<BodyPartItem> createState() => _BodyPartItemState();
 }
 
 class _BodyPartItemState extends State<BodyPartItem> {
-  bool value = false;
   String get title => widget.title;
   String lastWorkout = '';
+
+  bool isSelected() => widget.index != -1;
 
   @override
   void initState() {
@@ -45,21 +51,21 @@ class _BodyPartItemState extends State<BodyPartItem> {
   }
 
   Color getBackgroundColor() {
-    if (value == true) {
+    if (isSelected() == true) {
       return const Color.fromRGBO(52, 143, 250, 1);
     }
     return Colors.white;
   }
 
   Color getCheckboxColor() {
-    if (value == false) {
+    if (isSelected() == false) {
       return const Color.fromRGBO(52, 143, 250, 1);
     }
     return Colors.white;
   }
 
   Color getTextColor() {
-    if (value == true) {
+    if (isSelected() == true) {
       return Colors.white;
     }
     return Colors.black;
@@ -68,55 +74,79 @@ class _BodyPartItemState extends State<BodyPartItem> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-        onTap: () {
-          widget.onTap(title);
-          setState(() {
-            value = !value;
-          });
-        },
-        child: Container(
-            width: MediaQuery.of(context).size.width,
-            height: 80,
-            // margin: const EdgeInsets.all(5),
-            padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
-            decoration: BoxDecoration(
-              color: getBackgroundColor(),
-              // border: Border.all(color: getTextColor(), width: 0.2),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      onTap: () {
+        widget.onTap(title);
+      },
+      child: Container(
+          height: 60,
+          // margin: const EdgeInsets.all(5),
+          padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+          decoration: BoxDecoration(
+            color: getBackgroundColor(),
+            borderRadius: const BorderRadius.all(Radius.circular(8)),
+            border: !isSelected()
+                ? Border.all(color: Colors.blue, width: 1.25)
+                : null,
+          ),
+          child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Row(
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Checkbox(
-                      checkColor: Colors.blue,
-                      fillColor: MaterialStateProperty.resolveWith(
-                          (states) => getCheckboxColor()),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4)),
-                      value: value,
-                      onChanged: (bool? newValue) {
-                        setState(() {
-                          value = newValue!;
-                        });
-                      },
-                    ),
-                    Text(title,
-                        style: TextStyle(
-                            fontSize: 20,
-                            color: getTextColor(),
-                            fontWeight: FontWeight.w500)),
+                    Expanded(
+                        flex: 8,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(title,
+                                style: TextStyle(
+                                    fontSize: 22,
+                                    color: getTextColor(),
+                                    fontWeight: FontWeight.w500)),
+                            const SizedBox(height: 16),
+                            Container(
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                    color: isSelected()
+                                        ? Colors.white
+                                        : Colors.blue,
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(4))),
+                                height: 32,
+                                width: 32,
+                                child: isSelected()
+                                    ? Text(
+                                        widget.index.toString(),
+                                        style: const TextStyle(
+                                            color: Colors.blue,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600,
+                                            fontFamily: 'Roboto'),
+                                      )
+                                    : const Icon(
+                                        Icons.add,
+                                        color: Colors.white,
+                                        size: 24,
+                                      )),
+                          ],
+                        )),
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        width: MediaQuery.of(context).size.width * 0.35,
+                        alignment: Alignment.center,
+                        child: Text(lastWorkout,
+                            style: TextStyle(
+                                color: getTextColor(),
+                                fontWeight: FontWeight.w400)),
+                      ),
+                    )
                   ],
-                ),
-                Container(
-                  height: 80,
-                  alignment: Alignment.bottomRight,
-                  child: Text(lastWorkout,
-                      style: TextStyle(
-                          color: getTextColor(), fontWeight: FontWeight.w400)),
                 )
-              ],
-            )));
+              ])),
+    );
   }
 }
