@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/profile/layout.dart';
 
 import '../main.dart';
 
@@ -21,6 +22,10 @@ class _ProfilingWidgetState extends State<ProfilingWidget> {
   void getSessions() async {
     setState(() {
       workoutsNumber = sessions.length;
+      if (sessions.isEmpty) {
+        averageWorkouts = Future.value('0');
+        return;
+      }
       int sum = 0;
       int total = 1;
       int daysOffset = 7;
@@ -49,13 +54,33 @@ class _ProfilingWidgetState extends State<ProfilingWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Stack(
           children: [
-            CircleAvatar(
+            const CircleAvatar(
               radius: 50,
               backgroundImage: AssetImage('assets/profile.png'),
             ),
+            Positioned(
+              bottom: 4,
+              right: 4,
+              child: GestureDetector(
+                child: const CircleAvatar(
+                  radius: 12,
+                  backgroundColor: Colors.blue,
+                  child: Icon(
+                    Icons.edit,
+                    color: Colors.white,
+                    size: 15,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ProfileWidget()));
+                },
+              ),
+            )
           ],
         ),
         const Text('Trifon Mazarakis',

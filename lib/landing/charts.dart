@@ -20,6 +20,7 @@ class _ExcercisesChartState extends State<ExcercisesChart> {
     return FutureBuilder(
         builder: (context, snapshot) {
           if (snapshot.hasData) {
+            if (snapshot.data!.isEmpty) return const Text('no data');
             return PieChart(
               dataMap: snapshot.data!,
               animationDuration: const Duration(milliseconds: 800),
