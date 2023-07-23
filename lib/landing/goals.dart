@@ -166,7 +166,9 @@ abstract class Goal {
           title: g['title'],
           excercise: excercises[0]));
     }
-    return goalList.sublist(0, min(2, goalList.length));
+    print(goalList.length);
+    goalList.sort((a, b) => b.getProgress().compareTo(a.getProgress()));
+    return goalList.sublist(0, min(3, goalList.length));
   }
 }
 
