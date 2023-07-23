@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/landing/charts.dart';
+import 'package:flutter_application_1/landing/goals.dart';
 import 'package:flutter_application_1/landing/profiling.dart';
 import 'package:flutter_application_1/landing/recent.dart';
 
@@ -16,27 +17,52 @@ class _LayoutLandingState extends State<LayoutLanding> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
           child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: ListView(
           addAutomaticKeepAlives: false,
           scrollDirection: Axis.vertical,
-          children: const [
-            ProfilingWidget(),
-            SizedBox(
-              height: 40,
+          children: [
+            const ProfilingWidget(),
+            const SizedBox(
+              height: 30,
             ),
-            StartWorkoutButton(),
-            SizedBox(
+            const RecentWorkouts(),
+            const SizedBox(
               height: 20,
             ),
-            RecentWorkouts(),
-            SizedBox(
+            Button(
+                title: 'Start Workout',
+                clickHandler: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const BodyPartSelector()),
+                  );
+                }),
+            const SizedBox(
               height: 20,
             ),
-            ExcercisesChart(),
-            SizedBox(
+            const ExcercisesChart(),
+            const SizedBox(
+              height: 20,
+            ),
+            const WorkoutGoals(),
+            const SizedBox(
+              height: 20,
+            ),
+            Button(
+                title: 'Add Goals',
+                clickHandler: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const GoalCreation()),
+                  );
+                }),
+            const SizedBox(
               height: 100,
             )
           ],
@@ -46,8 +72,10 @@ class _LayoutLandingState extends State<LayoutLanding> {
   }
 }
 
-class StartWorkoutButton extends StatelessWidget {
-  const StartWorkoutButton({super.key});
+class Button extends StatelessWidget {
+  const Button({super.key, required this.title, required this.clickHandler});
+  final String title;
+  final Function clickHandler;
 
   @override
   Widget build(BuildContext context) {
@@ -64,23 +92,20 @@ class StartWorkoutButton extends StatelessWidget {
             backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
           ),
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const BodyPartSelector()),
-            );
+            clickHandler();
           },
-          child: const Row(
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              SizedBox(
+              const SizedBox(
                 width: 10,
               ),
-              Text('Start Workout',
-                  style: TextStyle(
+              Text(title,
+                  style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.bold)),
-              Icon(Icons.arrow_right_alt_outlined,
+              const Icon(Icons.arrow_right_alt_outlined,
                   color: Colors.white, size: 32)
             ],
           )),

@@ -47,7 +47,7 @@ class _ExcercisesChartState extends State<ExcercisesChart> {
                   dataMap: snapshot.data!,
                   animationDuration: const Duration(milliseconds: 800),
                   chartLegendSpacing: 16,
-                  chartRadius: MediaQuery.of(context).size.width / 2.1,
+                  chartRadius: MediaQuery.of(context).size.width / 2,
                   initialAngleInDegree: 0,
                   chartType: ChartType.disc,
                   gradientList: const [],

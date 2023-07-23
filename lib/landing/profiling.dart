@@ -88,7 +88,7 @@ class _ProfilingWidgetState extends State<ProfilingWidget> {
               fontSize: 22,
               fontWeight: FontWeight.bold,
             )),
-        const SizedBox(height: 10),
+        const SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/bodyPart.dart';
@@ -639,7 +640,6 @@ class ExcerciseInfo {
           'date': DateTime.now().millisecondsSinceEpoch
         },
         conflictAlgorithm: ConflictAlgorithm.replace);
-    print('inserted $id');
   }
 
   static Future<String> excerciseNotes(String name) async {
@@ -650,7 +650,6 @@ class ExcerciseInfo {
       where: 'excerciseName = ?',
       whereArgs: [name],
     );
-    print(nMap);
 
     String notes = '';
     for (var item in nMap) {
@@ -695,11 +694,13 @@ class ExcerciseInfo {
     Map<String, double> dataMap = {};
     print(eMap);
     for (var item in eMap) {
-      if (!dataMap.containsKey(item['excerciseName'])) {
-        dataMap.putIfAbsent(item['excerciseName'], () => 1);
+      List<String> words = item['excerciseName'].toString().split(' ');
+      String name = words.sublist(0, min(2, words.length)).join(' ');
+      if (!dataMap.containsKey(name)) {
+        dataMap.putIfAbsent(name, () => 1);
         continue;
       }
-      dataMap.update(item['excerciseName'], (value) => value + 1);
+      dataMap.update(name, (value) => value + 1);
     }
     if (dataMap.length > 5) {
       List<MapEntry<String, double>> li = dataMap.entries.toList()

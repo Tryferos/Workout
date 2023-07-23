@@ -12,6 +12,17 @@ void main() async {
   database = openDatabase(
     join(await getDatabasesPath(), "excercise_info_database.db"),
     onCreate: (db, version) async {
+      //Goals
+      await db.execute(
+          'create table if not exists Goals(id integer primary key autoincrement not null, title text, date integer)');
+      await db.execute(
+          'create table if not exists GoalExcerciseItem(id integer primary key autoincrement not null, name text, startingReps integer, startingWeight double, goalReps integer, goalWeight double,bodyPart text, icon_url text)');
+      await db.execute(
+          'create table if not exists WorkoutGoal(id integer primary key autoincrement not null, number integer, untilDate integer, goalId integer,FOREIGN KEY(goalId) REFERENCES Goals(id))');
+      await db.execute(
+          'create table if not exists ExcerciseGoal(id integer primary key autoincrement not null, goalId integer,goalExcerciseItemId integer,FOREIGN KEY(goalId) REFERENCES Goals(id), FOREIGN KEY(goalExcerciseItemId) REFERENCES GoalExcerciseItem(id))');
+
+      //Workout
       await db.execute(
         'create table if not exists Notes(id integer primary key autoincrement not null, note text, excerciseName text, date integer)',
       );
@@ -58,7 +69,14 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       home: Scaffold(
-        appBar: AppBar(),
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          toolbarOpacity: 0,
+        ),
+        extendBodyBehindAppBar: true,
         body: loading
             ? const Center(child: CircularProgressIndicator())
             : const LayoutLanding(),

@@ -39,6 +39,9 @@ dependencies:
   sqflite: ^2.2.8+4
   path: ^1.8.3
   pie_chart: ^5.3.2
+  vertical_weight_slider: ^2.5.0
+  dropdown_search: ^5.0.6
+  circular_chart_flutter: ^0.0.2
 
 dev_dependencies:
 

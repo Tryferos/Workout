@@ -95,6 +95,19 @@ class Excercise {
   get getName => name;
 
   get getNameUrl => nameUrl;
+  static Future<List<Excercise>> fetchAllExcercises() async {
+    final res = await http.get(Uri.parse(
+        'https://strengthlevel.com/api/exercises?limit=64&exercise.fields=category,name_url,bodypart,count,aliases,icon_url&standard=yes'));
+    if (res.statusCode == 200) {
+      List<Excercise> excercises = [];
+      jsonDecode(res.body)['data'].forEach((element) {
+        excercises.add(Excercise.fromJson(element));
+      });
+      return excercises;
+    } else {
+      throw Exception('Failed to load body part data');
+    }
+  }
 }
 
 class ExcerciseListItem extends StatefulWidget {
