@@ -52,7 +52,7 @@ class _AllGoalsState extends State<AllGoals> {
                         if (snapshot.hasData) {
                           if (snapshot.data!.isEmpty) {
                             return const Text(
-                              'No completed goals',
+                              'You don\'t have any uncompleted goals. Create one!',
                               style: TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.w600),
                             );

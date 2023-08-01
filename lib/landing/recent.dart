@@ -1,8 +1,95 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/main.dart';
 
 import '../database.dart';
+
+class AllWorkouts extends StatefulWidget {
+  const AllWorkouts({super.key});
+
+  @override
+  State<AllWorkouts> createState() => _AllWorkoutsState();
+}
+
+class _AllWorkoutsState extends State<AllWorkouts> {
+  List<String> bodyPartsTotal = [];
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      for (var i = 0; i < sessions.length; i++) {
+        List<String> bodyParts = [];
+        sessions[i]
+            .excerciseInfo!
+            .map((element) => element.excercise.bodyPart)
+            .toList()
+            .forEach((element) {
+          if (!bodyParts.contains(element)) bodyParts.add(element);
+        });
+        bodyPartsTotal.add(bodyParts.join(', '));
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('All Workouts',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
+      ),
+      body: Column(children: [
+        Expanded(
+            child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: ListView.separated(
+              shrinkWrap: true,
+              addAutomaticKeepAlives: true,
+              scrollDirection: Axis.vertical,
+              separatorBuilder: (context, index) => const SizedBox(
+                    height: 10,
+                  ),
+              itemCount: bodyPartsTotal.length,
+              itemBuilder: (context, i) {
+                return ListTile(
+                  shape: const RoundedRectangleBorder(
+                      side: BorderSide(color: Colors.grey, width: 0.75),
+                      borderRadius: BorderRadius.all(Radius.circular(10))),
+                  leading: const Icon(Icons.fitness_center),
+                  title: Text(
+                    bodyPartsTotal[i],
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w700, fontSize: 16),
+                  ),
+                  trailing: Stack(
+                    children: [
+                      PopupMenuButton<int>(
+                        offset: Offset.fromDirection(3, 40),
+                        onSelected: (item) => {},
+                        itemBuilder: (context) => [
+                          const PopupMenuItem<int>(
+                              value: 0, child: Text('View More')),
+                          const PopupMenuItem<int>(
+                              value: 1, child: Text('Delete')),
+                        ],
+                      ),
+                    ],
+                  ),
+                  subtitle: Text(
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                          color: Color.fromARGB(255, 134, 131, 131)),
+                      '${sessions[i].excerciseInfo!.map((el) => el.sets.length).reduce((value, element) => value + element)} Sets, ${(sessions[i].duration / 60).round()}m | ${Session.getAgo(sessions[i].date)}'),
+                );
+              }),
+        )),
+      ]),
+    );
+  }
+}
 
 class RecentWorkouts extends StatefulWidget {
   const RecentWorkouts({super.key, required this.sessionsCurrent});
@@ -55,20 +142,29 @@ class _RecentWorkoutsState extends State<RecentWorkouts> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Row(
+        Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
+            const Text(
               'Latest Workouts',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            Text(
-              'See All',
-              style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.blue),
-            ),
+            InkWell(
+              child: const Text(
+                'See All',
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.blue),
+              ),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AllWorkouts(),
+                    ));
+              },
+            )
           ],
         ),
         for (var i = 0; i < bodyPartsTotal.length; i++)
