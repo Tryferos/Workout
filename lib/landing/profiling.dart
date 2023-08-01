@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/profile/layout.dart';
 
-import '../main.dart';
+import '../database.dart';
 
 class ProfilingWidget extends StatefulWidget {
-  const ProfilingWidget({super.key});
+  const ProfilingWidget({super.key, required this.sessionsCurrent});
+
+  final List<Session> sessionsCurrent;
 
   @override
   State<ProfilingWidget> createState() => _ProfilingWidgetState();
@@ -12,6 +14,7 @@ class ProfilingWidget extends StatefulWidget {
 
 class _ProfilingWidgetState extends State<ProfilingWidget> {
   int workoutsNumber = 0;
+  List<Session> get cSessions => widget.sessionsCurrent;
   Future<String>? averageWorkouts;
   @override
   void initState() {
@@ -19,17 +22,23 @@ class _ProfilingWidgetState extends State<ProfilingWidget> {
     getSessions();
   }
 
+  @override
+  void didUpdateWidget(ProfilingWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    getSessions();
+  }
+
   void getSessions() async {
     setState(() {
-      workoutsNumber = sessions.length;
-      if (sessions.isEmpty) {
+      workoutsNumber = cSessions.length;
+      if (cSessions.isEmpty) {
         averageWorkouts = Future.value('0');
         return;
       }
       int sum = 0;
       int total = 1;
       int daysOffset = 7;
-      for (var session in sessions) {
+      for (var session in cSessions) {
         int date = DateTime.now()
             .subtract(Duration(days: (total * daysOffset)))
             .millisecondsSinceEpoch;

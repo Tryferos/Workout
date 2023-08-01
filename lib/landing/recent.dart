@@ -67,7 +67,18 @@ class _AllWorkoutsState extends State<AllWorkouts> {
                     children: [
                       PopupMenuButton<int>(
                         offset: Offset.fromDirection(3, 40),
-                        onSelected: (item) => {},
+                        onSelected: (item) async {
+                          if (item == 0) {
+                            return;
+                          }
+                          (await database)!.delete('Session',
+                              where: 'id = ?', whereArgs: [sessions[i].id]);
+                          setState(() {
+                            sessions.removeAt(i);
+                            bodyPartsTotal.removeAt(i);
+                            Navigator.pop(context);
+                          });
+                        },
                         itemBuilder: (context) => [
                           const PopupMenuItem<int>(
                               value: 0, child: Text('View More')),
@@ -183,8 +194,18 @@ class _RecentWorkoutsState extends State<RecentWorkouts> {
               trailing: Stack(
                 children: [
                   PopupMenuButton<int>(
+                    onSelected: (item) async {
+                      if (item == 0) {
+                        return;
+                      }
+                      (await database)!.delete('Session',
+                          where: 'id = ?', whereArgs: [sessions[i].id]);
+                      setState(() {
+                        sessions.removeAt(i);
+                        bodyPartsTotal.removeAt(i);
+                      });
+                    },
                     offset: Offset.fromDirection(3, 40),
-                    onSelected: (item) => {},
                     itemBuilder: (context) => [
                       const PopupMenuItem<int>(
                           value: 0, child: Text('View More')),

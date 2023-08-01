@@ -180,6 +180,27 @@ class WorkoutGoals extends StatefulWidget {
 }
 
 class _WorkoutGoalsState extends State<WorkoutGoals> {
+  Future<List<Goal>>? list;
+
+  @override
+  void initState() {
+    super.initState();
+    updateWidget();
+  }
+
+  void updateWidget() {
+    setState(() {
+      list = Goal.getGoals(false);
+    });
+  }
+
+  @override
+  void didUpdateWidget(WorkoutGoals oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    print('updated');
+    updateWidget();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -211,7 +232,7 @@ class _WorkoutGoalsState extends State<WorkoutGoals> {
           height: 10,
         ),
         FutureBuilder<List<Goal>>(
-            future: Goal.getGoals(false),
+            future: list,
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 return ListView.separated(
@@ -276,9 +297,10 @@ abstract class Goal {
       },
     );
     Widget removeButton = TextButton(
-      child: const Text("Remove"),
+      child: const Text(
+        "Remove",
+      ),
       onPressed: () async {
-        Navigator.of(context).pop();
         Navigator.of(context).pop();
         final db = await database;
         if (db == null) return;
@@ -286,8 +308,8 @@ abstract class Goal {
         db.delete('Goals', where: 'date = ?', whereArgs: [date]);
       },
     );
-    // set up the AlertDialog
     AlertDialog alert = AlertDialog(
+      elevation: 5,
       title: const Text("Remove Goal"),
       content: const Text("Are you sure you want to remove this goal?"),
       actions: [
@@ -295,7 +317,6 @@ abstract class Goal {
         removeButton,
       ],
     );
-    // show the dialog
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -435,38 +456,60 @@ class WorkoutGoal extends Goal {
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: Color.fromARGB(255, 134, 131, 131))),
-      trailing: AnimatedCircularChart(
-        percentageValues: true,
-        holeRadius: 24,
-        duration: const Duration(milliseconds: 500),
-        holeLabel: getProgress() < 0
-            ? 'Failed'
-            : '${(getProgress() * 100).toStringAsFixed(0)}%',
-        key: const Key('chart'),
-        size: const Size(65.0, 65.0),
-        initialChartData: <CircularStackEntry>[
-          CircularStackEntry(
-            <CircularSegmentEntry>[
-              CircularSegmentEntry(
-                getProgress() * 100,
-                getProgress() < 0
-                    ? Colors.red[400]
-                    : getProgress() >= 1
-                        ? Colors.green[500]
-                        : Colors.blue[400],
-                rankKey: 'completed',
-              ),
-              CircularSegmentEntry(
-                (100 - (getProgress() * 100)),
-                const Color.fromARGB(255, 227, 231, 233),
-                rankKey: 'remaining',
-              ),
-            ],
-            rankKey: 'progress',
-          ),
-        ],
-        chartType: CircularChartType.Radial,
-      ),
+      trailing: getProgress() < 0
+          ? Padding(
+              padding: const EdgeInsets.only(right: 5),
+              child: Container(
+                height: 55,
+                width: 55,
+                decoration: const BoxDecoration(
+                    border: Border.fromBorderSide(
+                        BorderSide(color: Colors.red, width: 2)),
+                    borderRadius: BorderRadius.all(Radius.circular(100))),
+                child: const Icon(Icons.remove_circle, color: Colors.red),
+              ))
+          : getProgress() < 1
+              ? AnimatedCircularChart(
+                  percentageValues: true,
+                  holeRadius: 24,
+                  duration: const Duration(milliseconds: 500),
+                  holeLabel: '${(getProgress() * 100).toStringAsFixed(0)}%',
+                  key: const Key('chart'),
+                  size: const Size(65.0, 65.0),
+                  initialChartData: <CircularStackEntry>[
+                    CircularStackEntry(
+                      <CircularSegmentEntry>[
+                        CircularSegmentEntry(
+                          getProgress() * 100,
+                          getProgress() < 0
+                              ? Colors.red[400]
+                              : getProgress() >= 1
+                                  ? Colors.green[500]
+                                  : Colors.blue[400],
+                          rankKey: 'completed',
+                        ),
+                        CircularSegmentEntry(
+                          (100 - (getProgress() * 100)),
+                          const Color.fromARGB(255, 227, 231, 233),
+                          rankKey: 'remaining',
+                        ),
+                      ],
+                      rankKey: 'progress',
+                    ),
+                  ],
+                  chartType: CircularChartType.Radial,
+                )
+              : Padding(
+                  padding: const EdgeInsets.only(right: 5),
+                  child: Container(
+                      height: 55,
+                      width: 55,
+                      decoration: const BoxDecoration(
+                          border: Border.fromBorderSide(
+                              BorderSide(color: Colors.green, width: 2)),
+                          borderRadius: BorderRadius.all(Radius.circular(100))),
+                      child: const Icon(Icons.check, color: Colors.green)),
+                ),
       leading: const Icon(Icons.fitness_center_outlined),
     );
   }
@@ -535,36 +578,48 @@ class SingleExcerciseGoal extends Goal {
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: Color.fromARGB(255, 134, 131, 131))),
-      trailing: AnimatedCircularChart(
-        percentageValues: true,
-        holeRadius: 24,
-        duration: const Duration(milliseconds: 500),
-        holeLabel: '${(getProgress() * 100).toStringAsFixed(0)}%',
-        key: const Key('chart'),
-        size: const Size(65.0, 65.0),
-        initialChartData: <CircularStackEntry>[
-          CircularStackEntry(
-            <CircularSegmentEntry>[
-              CircularSegmentEntry(
-                getProgress() * 100,
-                getProgress() < 0
-                    ? Colors.red[400]
-                    : getProgress() >= 1
-                        ? Colors.green[500]
-                        : Colors.blue[400],
-                rankKey: 'completed',
-              ),
-              CircularSegmentEntry(
-                (100 - (getProgress() * 100)),
-                const Color.fromARGB(255, 227, 231, 233),
-                rankKey: 'remaining',
-              ),
-            ],
-            rankKey: 'progress',
-          ),
-        ],
-        chartType: CircularChartType.Radial,
-      ),
+      trailing: getProgress() < 1
+          ? AnimatedCircularChart(
+              percentageValues: true,
+              holeRadius: 24,
+              duration: const Duration(milliseconds: 500),
+              holeLabel: '${(getProgress() * 100).toStringAsFixed(0)}%',
+              key: const Key('chart'),
+              size: const Size(65.0, 65.0),
+              initialChartData: <CircularStackEntry>[
+                CircularStackEntry(
+                  <CircularSegmentEntry>[
+                    CircularSegmentEntry(
+                      getProgress() * 100,
+                      getProgress() < 0
+                          ? Colors.red[400]
+                          : getProgress() >= 1
+                              ? Colors.green[500]
+                              : Colors.blue[400],
+                      rankKey: 'completed',
+                    ),
+                    CircularSegmentEntry(
+                      (100 - (getProgress() * 100)),
+                      const Color.fromARGB(255, 227, 231, 233),
+                      rankKey: 'remaining',
+                    ),
+                  ],
+                  rankKey: 'progress',
+                ),
+              ],
+              chartType: CircularChartType.Radial,
+            )
+          : Padding(
+              padding: const EdgeInsets.only(right: 5),
+              child: Container(
+                  height: 55,
+                  width: 55,
+                  decoration: const BoxDecoration(
+                      border: Border.fromBorderSide(
+                          BorderSide(color: Colors.green, width: 2)),
+                      borderRadius: BorderRadius.all(Radius.circular(100))),
+                  child: const Icon(Icons.check, color: Colors.green)),
+            ),
       leading: Image.network(
           scale: 32,
           excercise.iconUrl
@@ -578,6 +633,7 @@ class SingleExcerciseGoal extends Goal {
   void writeGoal() async {
     final db = await database;
     if (db == null) return;
+    print('inserting');
     int gId = await db.insert('Goals', {
       'title': title,
       'date': date,
@@ -605,7 +661,7 @@ class SingleExcerciseGoal extends Goal {
         excercise.startingSet.weight / excercise.goalSet.weight;
     double repProgress = excercise.startingSet.reps / excercise.goalSet.reps;
     if (repProgress >= 1 && weightProgress < 1) return weightProgress;
-    if (repProgress < 1 && weightProgress >= 1) return repProgress;
+    if (repProgress < 1 && weightProgress >= 1) return 0.99;
     return weightProgress;
   }
 

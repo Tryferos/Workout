@@ -31,64 +31,73 @@ class _LayoutLandingState extends State<LayoutLanding> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-          child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: ListView(
-          addAutomaticKeepAlives: false,
-          scrollDirection: Axis.vertical,
-          children: [
-            const ProfilingWidget(),
-            const SizedBox(
-              height: 30,
-            ),
-            RecentWorkouts(sessionsCurrent: sessionsCurrent),
-            const SizedBox(
-              height: 20,
-            ),
-            Button(
-                title: 'Start Workout',
-                clickHandler: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const BodyPartSelector()),
-                  ).then((session) {
-                    if (session == null) return;
-                    setState(() {
-                      db.Session.insertSession(session);
-                      sessionsCurrent.insert(0, session);
-                      sessions.insert(0, session);
-                      refresh = !refresh;
+      body: RefreshIndicator(
+        onRefresh: () async {
+          List<Session> li = await Session.sessions();
+          setState(() {
+            sessionsCurrent.setAll(0, li);
+            sessions.setAll(0, li);
+          });
+          return Future.value();
+        },
+        child: Center(
+            child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: ListView(
+            addAutomaticKeepAlives: false,
+            scrollDirection: Axis.vertical,
+            children: [
+              ProfilingWidget(sessionsCurrent: sessionsCurrent),
+              const SizedBox(
+                height: 30,
+              ),
+              RecentWorkouts(sessionsCurrent: sessionsCurrent),
+              const SizedBox(
+                height: 20,
+              ),
+              Button(
+                  title: 'Start Workout',
+                  clickHandler: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const BodyPartSelector()),
+                    ).then((session) {
+                      if (session == null) return;
+                      setState(() {
+                        db.Session.insertSession(session);
+                        sessions.insert(0, session);
+                        refresh = !refresh;
+                      });
                     });
-                  });
-                }),
-            const SizedBox(
-              height: 20,
-            ),
-            const ExcercisesChart(),
-            const SizedBox(
-              height: 20,
-            ),
-            WorkoutGoals(refresh: refresh),
-            const SizedBox(
-              height: 20,
-            ),
-            Button(
-                title: 'Add Goals',
-                clickHandler: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const GoalCreation()),
-                  );
-                }),
-            const SizedBox(
-              height: 100,
-            )
-          ],
-        ),
-      )),
+                  }),
+              const SizedBox(
+                height: 20,
+              ),
+              ExcercisesChart(refresh: refresh),
+              const SizedBox(
+                height: 20,
+              ),
+              WorkoutGoals(refresh: refresh),
+              const SizedBox(
+                height: 20,
+              ),
+              Button(
+                  title: 'Add Goals',
+                  clickHandler: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const GoalCreation()),
+                    );
+                  }),
+              const SizedBox(
+                height: 100,
+              )
+            ],
+          ),
+        )),
+      ),
     );
   }
 }

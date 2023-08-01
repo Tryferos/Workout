@@ -690,6 +690,7 @@ class ExcerciseInfo {
     final db = await database;
     if (db == null) return [];
     final List<Map<String, dynamic>> eMap = await db.query('excerciseInfo');
+    print(eMap);
 
     Map<String, int> dataMap = {};
     List<ExcerciseChart> excerciseChart = [];

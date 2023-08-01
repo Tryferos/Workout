@@ -253,7 +253,7 @@ class _AddExcerciseInfoState extends State<AddExcerciseInfo> {
   void initState() {
     super.initState();
     _weightController = WeightSliderController(
-        initialWeight: _weight, minWeight: 1, interval: 1);
+        initialWeight: _weight, minWeight: 0, interval: 1);
     _repsController = WeightSliderController(
         initialWeight: _weight, minWeight: 1, interval: 1);
   }
