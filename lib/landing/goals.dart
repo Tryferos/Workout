@@ -9,6 +9,167 @@ import '../excercise.dart' as Excercise_Package;
 import '../excercise.dart';
 import '../main.dart';
 
+class AllGoals extends StatefulWidget {
+  const AllGoals({super.key});
+
+  @override
+  State<AllGoals> createState() => _AllGoalsState();
+}
+
+class _AllGoalsState extends State<AllGoals> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            'All Goals',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          centerTitle: true,
+        ),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+          child: Column(
+            children: [
+              Column(
+                children: [
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Uncompleted Goals',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  FutureBuilder<List<Goal>>(
+                      future: Goal.getGoals(true),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          if (snapshot.data!.isEmpty) {
+                            return const Text(
+                              'No completed goals',
+                              style: TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600),
+                            );
+                          }
+                          return ListView.separated(
+                            scrollDirection: Axis.vertical,
+                            itemCount: snapshot.data!.length,
+                            shrinkWrap: true,
+                            itemBuilder: (context, index) =>
+                                snapshot.data![index].getGoalCard(context),
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(
+                              height: 10,
+                            ),
+                          );
+                        } else {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                      }),
+                  const SizedBox(
+                    height: 40,
+                  ),
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Completed Goals',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  FutureBuilder<List<Goal>>(
+                      future: Goal.getCompletedGoals(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          if (snapshot.data!.isEmpty) {
+                            return const Text(
+                              'You don\'t have any completed goals yet. Be persistent and you will get there!',
+                              style: TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600),
+                            );
+                          }
+                          return ListView.separated(
+                            scrollDirection: Axis.vertical,
+                            itemCount: snapshot.data!.length,
+                            shrinkWrap: true,
+                            itemBuilder: (context, index) =>
+                                snapshot.data![index].getGoalCard(context),
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(
+                              height: 10,
+                            ),
+                          );
+                        } else {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                      }),
+                  const SizedBox(
+                    height: 40,
+                  ),
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Failed Goals',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  FutureBuilder<List<Goal>>(
+                      future: Goal.getFailedGoals(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          if (snapshot.data!.isEmpty) {
+                            return const Text(
+                              'You don\'t have any failed goals 😁 Keep up the good work!',
+                              style: TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600),
+                            );
+                          }
+                          return ListView.separated(
+                            scrollDirection: Axis.vertical,
+                            itemCount: snapshot.data!.length,
+                            shrinkWrap: true,
+                            itemBuilder: (context, index) =>
+                                snapshot.data![index].getGoalCard(context),
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(
+                              height: 10,
+                            ),
+                          );
+                        } else {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                      }),
+                ],
+              ),
+            ],
+          ),
+        ));
+  }
+}
+
 class WorkoutGoals extends StatefulWidget {
   const WorkoutGoals({super.key, required this.refresh});
 
@@ -31,7 +192,12 @@ class _WorkoutGoalsState extends State<WorkoutGoals> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             InkWell(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AllGoals()),
+                  );
+                },
                 child: const Text(
                   'See All',
                   style: TextStyle(
@@ -52,7 +218,7 @@ class _WorkoutGoalsState extends State<WorkoutGoals> {
                   itemCount: snapshot.data!.length,
                   shrinkWrap: true,
                   itemBuilder: (context, index) =>
-                      snapshot.data![index].getGoalCard(),
+                      snapshot.data![index].getGoalCard(context),
                   separatorBuilder: (context, index) => const SizedBox(
                     height: 10,
                   ),
@@ -99,7 +265,44 @@ abstract class Goal {
   bool isCompleted();
   double getProgress();
   void writeGoal();
-  Widget getGoalCard();
+  Widget getGoalCard(BuildContext context);
+
+  void removeGoal(BuildContext context) {
+    // set up the buttons
+    Widget cancelButton = TextButton(
+      child: const Text("Cancel"),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+    Widget removeButton = TextButton(
+      child: const Text("Remove"),
+      onPressed: () async {
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+        final db = await database;
+        if (db == null) return;
+
+        db.delete('Goals', where: 'date = ?', whereArgs: [date]);
+      },
+    );
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: const Text("Remove Goal"),
+      content: const Text("Are you sure you want to remove this goal?"),
+      actions: [
+        cancelButton,
+        removeButton,
+      ],
+    );
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
 
   static Excercise_Package.Set getSet(String name) {
     Excercise_Package.Set startingSet;
@@ -118,7 +321,7 @@ abstract class Goal {
     return startingSet;
   }
 
-  static Future<List<Goal>> getGoals(bool completed) async {
+  static Future<List<Goal>> fetchAllGoals() async {
     final db = await database;
     if (db == null) return [];
     List<Map<String, dynamic>> goals =
@@ -167,15 +370,30 @@ abstract class Goal {
           title: g['title'],
           excercise: excercises[0]));
     }
+    return goalList;
+  }
+
+  static Future<List<Goal>> getGoals(bool getAll) async {
+    List<Goal> goalList = await fetchAllGoals();
     goalList.sort((a, b) => b.getProgress().compareTo(a.getProgress()));
-    if (!completed) {
-      goalList = goalList
-          .where(
-              (element) => !element.isCompleted() && element.getProgress() >= 0)
-          .toList();
-      return goalList.sublist(0, min(3, goalList.length));
-    }
-    return goalList.sublist(0, min(3, goalList.length));
+    goalList = goalList
+        .where(
+            (element) => !element.isCompleted() && element.getProgress() >= 0)
+        .toList();
+    return goalList.sublist(
+        0, getAll == true ? goalList.length : min(3, goalList.length));
+  }
+
+  static Future<List<Goal>> getFailedGoals() async {
+    return (await fetchAllGoals())
+        .where((element) => element.getProgress() < 0)
+        .toList();
+  }
+
+  static Future<List<Goal>> getCompletedGoals() async {
+    return (await fetchAllGoals())
+        .where((element) => element.isCompleted())
+        .toList();
   }
 }
 
@@ -201,14 +419,18 @@ class WorkoutGoal extends Goal {
   }
 
   @override
-  Widget getGoalCard() {
+  Widget getGoalCard(BuildContext context) {
     return ListTile(
+      onLongPress: () {
+        super.removeGoal(context);
+      },
       shape: const RoundedRectangleBorder(
           side: BorderSide(color: Colors.grey, width: 0.75),
           borderRadius: BorderRadius.all(Radius.circular(10))),
       title: Text(title,
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-      subtitle: Text('$number total | ${getDaysLeft()}d left',
+      subtitle: Text(
+          '$number total | ${getDaysLeft() < 0 ? 'was due ${getDaysLeft().abs()}d ago' : '${getDaysLeft()}d left'}',
           style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -217,7 +439,9 @@ class WorkoutGoal extends Goal {
         percentageValues: true,
         holeRadius: 24,
         duration: const Duration(milliseconds: 500),
-        holeLabel: '${(getProgress() * 100).toStringAsFixed(0)}%',
+        holeLabel: getProgress() < 0
+            ? 'Failed'
+            : '${(getProgress() * 100).toStringAsFixed(0)}%',
         key: const Key('chart'),
         size: const Size(65.0, 65.0),
         initialChartData: <CircularStackEntry>[
@@ -225,7 +449,11 @@ class WorkoutGoal extends Goal {
             <CircularSegmentEntry>[
               CircularSegmentEntry(
                 getProgress() * 100,
-                Colors.blue[400],
+                getProgress() < 0
+                    ? Colors.red[400]
+                    : getProgress() >= 1
+                        ? Colors.green[500]
+                        : Colors.blue[400],
                 rankKey: 'completed',
               ),
               CircularSegmentEntry(
@@ -291,8 +519,11 @@ class SingleExcerciseGoal extends Goal {
   ExcerciseGoalItem excercise;
 
   @override
-  Widget getGoalCard() {
+  Widget getGoalCard(BuildContext context) {
     return ListTile(
+      onLongPress: () {
+        super.removeGoal(context);
+      },
       shape: const RoundedRectangleBorder(
           side: BorderSide(color: Colors.grey, width: 0.75),
           borderRadius: BorderRadius.all(Radius.circular(10))),
@@ -316,7 +547,11 @@ class SingleExcerciseGoal extends Goal {
             <CircularSegmentEntry>[
               CircularSegmentEntry(
                 getProgress() * 100,
-                Colors.blue[400],
+                getProgress() < 0
+                    ? Colors.red[400]
+                    : getProgress() >= 1
+                        ? Colors.green[500]
+                        : Colors.blue[400],
                 rankKey: 'completed',
               ),
               CircularSegmentEntry(
@@ -404,7 +639,7 @@ class MultiExcerciseGoal extends Goal {
   List<ExcerciseGoalItem> excercises;
 
   @override
-  Widget getGoalCard() {
+  Widget getGoalCard(BuildContext context) {
     return const Text('');
   }
 

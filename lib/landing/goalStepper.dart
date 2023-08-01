@@ -132,7 +132,7 @@ class _GoalStepperWidgetState extends State<GoalStepperWidget> {
                       ElevatedButton(
                           onPressed: () {},
                           child: const Text('Select a deadline'))
-                    else if (details.currentStep == 3 && title.length < 8)
+                    else if (details.currentStep == 3 && title.length < 4)
                       ElevatedButton(
                           onPressed: () {}, child: const Text('Set a title'))
                     else

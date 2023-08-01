@@ -48,11 +48,14 @@ class _ExcercisesChartState extends State<ExcercisesChart> {
                     centerX: '50%',
                     centerY: '50%',
                     legend: const Legend(
+                        toggleSeriesVisibility: true,
                         position: LegendPosition.bottom,
                         isVisible: true,
                         alignment: ChartAlignment.center,
                         overflowMode: LegendItemOverflowMode.wrap),
-                    tooltipBehavior: TooltipBehavior(enable: true),
+                    tooltipBehavior: TooltipBehavior(
+                      enable: true,
+                    ),
                     series: <CircularSeries>[
                       // Renders radial bar chart
                       RadialBarSeries<ExcerciseChart, String>(
