@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/database.dart' as db;
 import 'package:flutter_application_1/landing/charts.dart';
 import 'package:flutter_application_1/landing/goals.dart';
 import 'package:flutter_application_1/landing/profiling.dart';
 import 'package:flutter_application_1/landing/recent.dart';
 
+import '../database.dart';
 import '../index.dart';
+import '../main.dart';
 
 class LayoutLanding extends StatefulWidget {
   const LayoutLanding({super.key});
@@ -14,6 +17,16 @@ class LayoutLanding extends StatefulWidget {
 }
 
 class _LayoutLandingState extends State<LayoutLanding> {
+  List<Session> sessionsCurrent = [];
+  bool refresh = false;
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      sessionsCurrent = sessions;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,7 +42,7 @@ class _LayoutLandingState extends State<LayoutLanding> {
             const SizedBox(
               height: 30,
             ),
-            const RecentWorkouts(),
+            RecentWorkouts(sessionsCurrent: sessionsCurrent),
             const SizedBox(
               height: 20,
             ),
@@ -40,7 +53,15 @@ class _LayoutLandingState extends State<LayoutLanding> {
                     context,
                     MaterialPageRoute(
                         builder: (context) => const BodyPartSelector()),
-                  );
+                  ).then((session) {
+                    if (session == null) return;
+                    setState(() {
+                      db.Session.insertSession(session);
+                      sessionsCurrent.insert(0, session);
+                      sessions.insert(0, session);
+                      refresh = !refresh;
+                    });
+                  });
                 }),
             const SizedBox(
               height: 20,
@@ -49,7 +70,7 @@ class _LayoutLandingState extends State<LayoutLanding> {
             const SizedBox(
               height: 20,
             ),
-            const WorkoutGoals(),
+            WorkoutGoals(refresh: refresh),
             const SizedBox(
               height: 20,
             ),

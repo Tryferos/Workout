@@ -42,6 +42,7 @@ dependencies:
   vertical_weight_slider: ^2.5.0
   dropdown_search: ^5.0.6
   circular_chart_flutter: ^0.0.2
+  syncfusion_flutter_charts: ^22.2.5
 
 dev_dependencies:
 

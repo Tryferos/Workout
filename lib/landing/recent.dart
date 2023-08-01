@@ -2,11 +2,12 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../main.dart';
-import '../session.dart';
+import '../database.dart';
 
 class RecentWorkouts extends StatefulWidget {
-  const RecentWorkouts({super.key});
+  const RecentWorkouts({super.key, required this.sessionsCurrent});
+
+  final List<Session> sessionsCurrent;
 
   @override
   State<RecentWorkouts> createState() => _RecentWorkoutsState();
@@ -14,14 +15,32 @@ class RecentWorkouts extends StatefulWidget {
 
 class _RecentWorkoutsState extends State<RecentWorkouts> {
   List<String> bodyPartsTotal = [];
+
+  @override
+  void didUpdateWidget(RecentWorkouts oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    setState(() {
+      bodyPartsTotal = [];
+      for (var i = 0; i < min(2, widget.sessionsCurrent.length); i++) {
+        List<String> bodyParts = [];
+        widget.sessionsCurrent[i].excerciseInfo!
+            .map((element) => element.excercise.bodyPart)
+            .toList()
+            .forEach((element) {
+          if (!bodyParts.contains(element)) bodyParts.add(element);
+        });
+        bodyPartsTotal.add(bodyParts.join(', '));
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     setState(() {
-      for (var i = 0; i < min(2, sessions.length); i++) {
+      for (var i = 0; i < min(2, widget.sessionsCurrent.length); i++) {
         List<String> bodyParts = [];
-        sessions[i]
-            .excerciseInfo!
+        widget.sessionsCurrent[i].excerciseInfo!
             .map((element) => element.excercise.bodyPart)
             .toList()
             .forEach((element) {
@@ -83,7 +102,7 @@ class _RecentWorkoutsState extends State<RecentWorkouts> {
                       fontWeight: FontWeight.w700,
                       fontSize: 14,
                       color: Color.fromARGB(255, 134, 131, 131)),
-                  '${sessions[i].excerciseInfo!.map((el) => el.sets.length).reduce((value, element) => value + element)} Sets, ${(sessions[i].duration / 60).round()}m | ${Session.getAgo(sessions[i].date)}'),
+                  '${widget.sessionsCurrent[i].excerciseInfo!.map((el) => el.sets.length).reduce((value, element) => value + element)} Sets, ${(widget.sessionsCurrent[i].duration / 60).round()}m | ${Session.getAgo(widget.sessionsCurrent[i].date)}'),
             ),
           )
       ],

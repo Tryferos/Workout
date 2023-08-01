@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/bodyPart.dart';
 import 'package:flutter_application_1/history.dart';
+import 'package:flutter_application_1/landing/charts.dart';
 import 'package:flutter_application_1/notes.dart';
 import 'package:flutter_application_1/session.dart';
 import 'package:http/http.dart' as http;
@@ -673,7 +674,6 @@ class ExcerciseInfo {
     for (var e in eMap) {
       final List<Map<String, dynamic>> smap = await db
           .query('session', where: 'id = ?', whereArgs: [e['sessionId']]);
-      print(smap);
       final List<Map<String, dynamic>> setMap = await db
           .query('Sets', where: 'excerciseInfoId = ?', whereArgs: [e['id']]);
       int date = setMap.isNotEmpty ? smap[0]['date'] : 0;
@@ -686,13 +686,13 @@ class ExcerciseInfo {
     return excerciseHistory;
   }
 
-  static Future<Map<String, double>> excercisesFrequent() async {
+  static Future<List<ExcerciseChart>> excercisesFrequent() async {
     final db = await database;
-    if (db == null) return {};
+    if (db == null) return [];
     final List<Map<String, dynamic>> eMap = await db.query('excerciseInfo');
 
-    Map<String, double> dataMap = {};
-    print(eMap);
+    Map<String, int> dataMap = {};
+    List<ExcerciseChart> excerciseChart = [];
     for (var item in eMap) {
       List<String> words = item['excerciseName'].toString().split(' ');
       String name = words.sublist(0, min(2, words.length)).join(' ');
@@ -703,11 +703,14 @@ class ExcerciseInfo {
       dataMap.update(name, (value) => value + 1);
     }
     if (dataMap.length > 5) {
-      List<MapEntry<String, double>> li = dataMap.entries.toList()
+      List<MapEntry<String, int>> li = dataMap.entries.toList()
         ..sort((a, b) => b.value.compareTo(a.value));
-      return Map.fromEntries(li.sublist(0, 5));
+      return li
+          .sublist(0, 5)
+          .map((e) => ExcerciseChart(e.key, e.value))
+          .toList();
     }
-    return dataMap;
+    return dataMap.entries.map((e) => ExcerciseChart(e.key, e.value)).toList();
   }
 
   static Future<List<ExcerciseInfo>> excercisesInfo(int sessionId) async {

@@ -4,32 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/bodyPart.dart';
 import 'package:flutter_application_1/database.dart' as db;
 import 'package:flutter_application_1/excercise.dart';
-import 'package:flutter_application_1/main.dart';
 
 class Session extends StatefulWidget {
   const Session({super.key, required this.selectedBodyParts});
 
   final List<String> selectedBodyParts;
-
-  static String getAgo(int millis) {
-    DateTime date = DateTime.now();
-    int timePassed = ((date.millisecondsSinceEpoch - millis) / 1000).round();
-    String lastWorkout = '';
-
-    int hoursPassed = (timePassed / 3600).round();
-    if (hoursPassed < 24) {
-      return '${hoursPassed}h ago';
-    }
-    int daysPassed = (hoursPassed / 24).round();
-    if (daysPassed < 7) {
-      return '${daysPassed}d ago';
-    }
-    int weeksPassed = (daysPassed / 7).round();
-    if (weeksPassed < 4) {
-      return '${weeksPassed}w ago';
-    }
-    return lastWorkout;
-  }
 
   @override
   State<Session> createState() => _SessionState();
@@ -225,14 +204,9 @@ class _SessionState extends State<Session> {
         db.Session session = db.Session(
             date: DateTime.now().millisecondsSinceEpoch, duration: duration);
         session.excerciseInfo = data;
-        db.Session.insertSession(session);
-        print(session);
-        setState(() {
-          sessions.add(session);
-        });
         Navigator.of(context).pop();
         Navigator.of(context).pop();
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(session);
       },
     );
     // set up the AlertDialog

@@ -106,7 +106,7 @@ class _ProfilingWidgetState extends State<ProfilingWidget> {
             Column(
               children: [
                 const Text(
-                  'Workouts AVG',
+                  'AVG',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 FutureBuilder(

@@ -1,6 +1,8 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/excercise.dart';
-import 'package:pie_chart/pie_chart.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 class ExcercisesChart extends StatefulWidget {
   const ExcercisesChart({super.key});
@@ -42,60 +44,40 @@ class _ExcercisesChartState extends State<ExcercisesChart> {
         FutureBuilder(
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                if (snapshot.data!.isEmpty) return const Text('no data');
-                return PieChart(
-                  dataMap: snapshot.data!,
-                  animationDuration: const Duration(milliseconds: 800),
-                  chartLegendSpacing: 16,
-                  chartRadius: MediaQuery.of(context).size.width / 2,
-                  initialAngleInDegree: 0,
-                  chartType: ChartType.disc,
-                  gradientList: const [],
-                  ringStrokeWidth: 32,
-                  colorList: const [
-                    Colors.blue,
-                    Colors.red,
-                    Colors.green,
-                    Colors.yellow,
-                    Colors.purple,
-                    Colors.orange,
-                    Colors.teal,
-                    Colors.pink,
-                    Colors.indigo,
-                    Colors.lime,
-                    Colors.cyan,
-                    Colors.amber,
-                    Colors.brown,
-                    Colors.grey,
-                    Colors.blueGrey,
-                  ],
-                  legendOptions: const LegendOptions(
-                    showLegendsInRow: false,
-                    legendPosition: LegendPosition.right,
-                    showLegends: true,
-                    legendShape: BoxShape.circle,
-                    legendTextStyle: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  chartValuesOptions: const ChartValuesOptions(
-                    chartValueStyle: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color.fromARGB(255, 0, 0, 0),
-                    ),
-                    showChartValueBackground: true,
-                    showChartValues: true,
-                    showChartValuesInPercentage: true,
-                    showChartValuesOutside: false,
-                    decimalPlaces: 1,
-                  ),
-                );
+                return SfCircularChart(
+                    centerX: '50%',
+                    centerY: '50%',
+                    legend: const Legend(
+                        position: LegendPosition.bottom,
+                        isVisible: true,
+                        alignment: ChartAlignment.center,
+                        overflowMode: LegendItemOverflowMode.wrap),
+                    tooltipBehavior: TooltipBehavior(enable: true),
+                    series: <CircularSeries>[
+                      // Renders radial bar chart
+                      RadialBarSeries<ExcerciseChart, String>(
+                          radius: '100%',
+                          cornerStyle: CornerStyle.bothCurve,
+                          gap: '10%',
+                          trackColor: Colors.grey[200]!,
+                          maximumValue:
+                              max(snapshot.data![0].times.toDouble(), 10),
+                          innerRadius: '20%',
+                          dataSource: snapshot.data,
+                          xValueMapper: (ExcerciseChart data, _) => data.name,
+                          yValueMapper: (ExcerciseChart data, _) => data.times)
+                    ]);
               }
               return const CircularProgressIndicator();
             },
-            future: ExcerciseInfo.excercisesFrequent()),
+            future: ExcerciseInfo.excercisesFrequent())
       ],
     );
   }
+}
+
+class ExcerciseChart {
+  final String name;
+  final int times;
+  ExcerciseChart(this.name, this.times);
 }

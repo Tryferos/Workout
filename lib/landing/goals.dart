@@ -10,7 +10,9 @@ import '../excercise.dart';
 import '../main.dart';
 
 class WorkoutGoals extends StatefulWidget {
-  const WorkoutGoals({super.key});
+  const WorkoutGoals({super.key, required this.refresh});
+
+  final bool refresh;
 
   @override
   State<WorkoutGoals> createState() => _WorkoutGoalsState();
@@ -43,7 +45,7 @@ class _WorkoutGoalsState extends State<WorkoutGoals> {
           height: 10,
         ),
         FutureBuilder<List<Goal>>(
-            future: Goal.getGoals(),
+            future: Goal.getGoals(false),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 return ListView.separated(
@@ -116,7 +118,7 @@ abstract class Goal {
     return startingSet;
   }
 
-  static Future<List<Goal>> getGoals() async {
+  static Future<List<Goal>> getGoals(bool completed) async {
     final db = await database;
     if (db == null) return [];
     List<Map<String, dynamic>> goals =
@@ -145,7 +147,6 @@ abstract class Goal {
             where: 'id = ?',
             whereArgs: [e['goalExcerciseItemId']]);
         for (var i in excerciseItems) {
-          print(i);
           excercises.add(ExcerciseGoalItem(
             name: i['name'],
             bodyPart: i['bodyPart'],
@@ -166,8 +167,14 @@ abstract class Goal {
           title: g['title'],
           excercise: excercises[0]));
     }
-    print(goalList.length);
     goalList.sort((a, b) => b.getProgress().compareTo(a.getProgress()));
+    if (!completed) {
+      goalList = goalList
+          .where(
+              (element) => !element.isCompleted() && element.getProgress() >= 0)
+          .toList();
+      return goalList.sublist(0, min(3, goalList.length));
+    }
     return goalList.sublist(0, min(3, goalList.length));
   }
 }
