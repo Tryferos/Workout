@@ -104,7 +104,7 @@ class _LayoutLandingState extends State<LayoutLanding> {
                   }),
               const SizedBox(
                 height: 100,
-              )
+              ),
             ],
           ),
         )),

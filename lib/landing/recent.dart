@@ -6,7 +6,9 @@ import 'package:flutter_application_1/main.dart';
 import '../database.dart';
 
 class AllWorkouts extends StatefulWidget {
-  const AllWorkouts({super.key});
+  const AllWorkouts({
+    super.key,
+  });
 
   @override
   State<AllWorkouts> createState() => _AllWorkoutsState();
@@ -35,6 +37,7 @@ class _AllWorkoutsState extends State<AllWorkouts> {
   @override
   void didUpdateWidget(AllWorkouts oldWidget) {
     super.didUpdateWidget(oldWidget);
+    print('updated');
     setState(() {
       bodyPartsTotal = [];
       for (var i = 0; i < sessions.length; i++) {
@@ -136,6 +139,7 @@ class _RecentWorkoutsState extends State<RecentWorkouts> {
   @override
   void didUpdateWidget(RecentWorkouts oldWidget) {
     super.didUpdateWidget(oldWidget);
+    print('uodate');
     setState(() {
       bodyPartsTotal = [];
       for (var i = 0; i < min(2, widget.sessionsCurrent.length); i++) {

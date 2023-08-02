@@ -57,7 +57,6 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    print('init');
     Session.sessions().then((data) {
       sessions = data;
       setState(() {
@@ -71,20 +70,31 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'Workout',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
         useMaterial3: true,
       ),
       home: Scaffold(
-          backgroundColor: Colors.transparent,
+          backgroundColor: loading ? Colors.white : Colors.transparent,
           appBar: AppBar(
             surfaceTintColor: Colors.transparent,
-            elevation: 0,
+            foregroundColor: Colors.black,
             backgroundColor: Colors.transparent,
-            toolbarOpacity: 0,
+            title: loading
+                ? const Text('Workout',
+                    style: TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24))
+                : null,
+            centerTitle: true,
           ),
           extendBodyBehindAppBar: true,
           body: loading
-              ? const Center(child: CircularProgressIndicator())
+              ? Center(
+                  child: CircularProgressIndicator(
+                  backgroundColor: Colors.grey[300],
+                  color: Colors.blue,
+                ))
               : const LayoutLanding()),
     );
   }

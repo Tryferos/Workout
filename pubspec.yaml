@@ -45,7 +45,9 @@ dependencies:
   syncfusion_flutter_charts: ^22.2.5
   image_picker: ^1.0.1
 
+
 dev_dependencies:
+
 
   flutter_test:
     sdk: flutter
@@ -59,7 +61,6 @@ dev_dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
-
 # The following section is specific to Flutter packages.
 flutter:
 

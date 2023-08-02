@@ -686,14 +686,47 @@ class ExcerciseInfo {
     return excerciseHistory;
   }
 
+  //create a function that returns the date in a string format
+  static String getDate(int ms) {
+    DateTime date = DateTime.fromMillisecondsSinceEpoch(ms);
+    return '${date.hour}:${date.minute}';
+  }
+
+  static Future<ExcerciseSpikeLine?> getExcercisesEffort(String sName) async {
+    final db = await database;
+    if (db == null) return Future.value(null);
+    List<ExcerciseChart> fr = await excercisesFrequent();
+    final List<Map<String, dynamic>> sMap = await db.query('Session');
+    ExcerciseSpikeLine? line;
+    for (var item in sMap) {
+      final List<Map<String, dynamic>> eMap = await db.query('excerciseInfo',
+          where: 'sessionId = ?', whereArgs: [item['id']]);
+      for (var eItem in eMap) {
+        List<String> words = eItem['excerciseName'].toString().split(' ');
+        String name = words.sublist(0, min(2, words.length)).join(' ');
+        if (!fr.any((element) => element.name == name) || name != sName) {
+          continue;
+        }
+        final List<Map<String, dynamic>> setMap = await db.query('Sets',
+            where: 'excerciseInfoId = ?', whereArgs: [eItem['id']]);
+        double effort = 0;
+        for (var s in setMap) {
+          effort += (s['reps'] * 0.75) * s['weight'];
+        }
+        line ??= ExcerciseSpikeLine(name);
+        line.weeklyInfo.add(ExcerciseSpikeLineWeeklyInfo(item['date'], effort));
+      }
+    }
+    print(line);
+
+    return line;
+  }
+
   static Future<List<ExcerciseChart>> excercisesFrequent() async {
     final db = await database;
     if (db == null) return [];
     final List<Map<String, dynamic>> eMap = await db.query('excerciseInfo');
-    print(eMap);
-
     Map<String, int> dataMap = {};
-    List<ExcerciseChart> excerciseChart = [];
     for (var item in eMap) {
       List<String> words = item['excerciseName'].toString().split(' ');
       String name = words.sublist(0, min(2, words.length)).join(' ');
