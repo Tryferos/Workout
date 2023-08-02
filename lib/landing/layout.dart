@@ -35,6 +35,17 @@ class _LayoutLandingState extends State<LayoutLanding> {
         onRefresh: () async {
           List<Session> li = await Session.sessions();
           setState(() {
+            if (li.isEmpty) {
+              sessionsCurrent = [];
+              sessions = [];
+              return;
+            }
+            if ((li.length > sessionsCurrent.length) ||
+                li.length > sessions.length) {
+              sessionsCurrent = li;
+              sessions = li;
+              return;
+            }
             sessionsCurrent.setAll(0, li);
             sessions.setAll(0, li);
           });

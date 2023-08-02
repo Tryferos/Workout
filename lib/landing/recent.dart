@@ -33,6 +33,25 @@ class _AllWorkoutsState extends State<AllWorkouts> {
   }
 
   @override
+  void didUpdateWidget(AllWorkouts oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    setState(() {
+      bodyPartsTotal = [];
+      for (var i = 0; i < sessions.length; i++) {
+        List<String> bodyParts = [];
+        sessions[i]
+            .excerciseInfo!
+            .map((element) => element.excercise.bodyPart)
+            .toList()
+            .forEach((element) {
+          if (!bodyParts.contains(element)) bodyParts.add(element);
+        });
+        bodyPartsTotal.add(bodyParts.join(', '));
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(

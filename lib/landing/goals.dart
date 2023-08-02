@@ -197,7 +197,6 @@ class _WorkoutGoalsState extends State<WorkoutGoals> {
   @override
   void didUpdateWidget(WorkoutGoals oldWidget) {
     super.didUpdateWidget(oldWidget);
-    print('updated');
     updateWidget();
   }
 
@@ -402,7 +401,7 @@ abstract class Goal {
             (element) => !element.isCompleted() && element.getProgress() >= 0)
         .toList();
     return goalList.sublist(
-        0, getAll == true ? goalList.length : min(3, goalList.length));
+        0, getAll == true ? goalList.length : min(2, goalList.length));
   }
 
   static Future<List<Goal>> getFailedGoals() async {

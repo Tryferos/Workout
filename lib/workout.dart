@@ -119,7 +119,7 @@ class _BodyPartItemState extends State<BodyPartItem> {
                                 width: 32,
                                 child: isSelected()
                                     ? Text(
-                                        widget.index.toString(),
+                                        (widget.index + 1).toString(),
                                         style: const TextStyle(
                                             color: Colors.blue,
                                             fontSize: 18,

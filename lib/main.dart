@@ -17,6 +17,8 @@ void main() async {
     onCreate: (db, version) async {
       //Goals
       await db.execute(
+          'create table if not exists Profile(id integer primary key autoincrement not null, username text, image_path text)');
+      await db.execute(
           'create table if not exists Goals(id integer primary key autoincrement not null, title text, date integer)');
       await db.execute(
           'create table if not exists GoalExcerciseItem(id integer primary key autoincrement not null, name text, startingReps integer, startingWeight double, goalReps integer, goalWeight double,bodyPart text, icon_url text)');

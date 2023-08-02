@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/profile/layout.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../database.dart';
+import '../main.dart';
 
 class ProfilingWidget extends StatefulWidget {
   const ProfilingWidget({super.key, required this.sessionsCurrent});
@@ -16,10 +19,48 @@ class _ProfilingWidgetState extends State<ProfilingWidget> {
   int workoutsNumber = 0;
   List<Session> get cSessions => widget.sessionsCurrent;
   Future<String>? averageWorkouts;
+  String? username;
+  String? image_path;
   @override
   void initState() {
     super.initState();
     getSessions();
+    getProfileData();
+  }
+
+  void readImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    if (image == null) return;
+    update(image.path);
+    setState(() {
+      image_path = image.path;
+    });
+  }
+
+  void update(String? path) async {
+    final db = await database;
+    if (db == null) return;
+    final a = await db.update("Profile",
+        {'image_path': path ?? image_path, 'username': username ?? 'Gym Bro'},
+        where: 'id = 1');
+    if (a == 0) {
+      await db.insert("Profile", {
+        'image_path': path ?? image_path,
+        'username': username ?? 'Gym Bro'
+      });
+    }
+  }
+
+  void getProfileData() async {
+    final db = await database;
+    if (db == null) return;
+    final List<Map<String, dynamic>> pMap = await db.query("Profile");
+    if (pMap.isEmpty) return;
+    setState(() {
+      username = pMap[0]['username'];
+      image_path = pMap[0]['image_path'];
+    });
   }
 
   @override
@@ -58,6 +99,51 @@ class _ProfilingWidgetState extends State<ProfilingWidget> {
     });
   }
 
+  void showPicker() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SizedBox(
+          height: 250,
+          width: MediaQuery.of(context).size.width,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+            child: Column(children: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    readImage();
+                  },
+                  child: const Text('Choose an image')),
+              const Divider(
+                height: 48,
+              ),
+              const Text('Change username'),
+              TextField(
+                decoration: InputDecoration(
+                  hintText: username ?? 'Gym Bro',
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    username = value;
+                    update(null);
+                  });
+                },
+              ),
+            ]),
+          ),
+        );
+      },
+    );
+  }
+
+  ImageProvider getImage() {
+    if (image_path != null) {
+      FileImage(File(image_path!));
+    }
+    return const AssetImage('assets/profile.png');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -65,9 +151,11 @@ class _ProfilingWidgetState extends State<ProfilingWidget> {
       children: [
         Stack(
           children: [
-            const CircleAvatar(
+            CircleAvatar(
               radius: 50,
-              backgroundImage: AssetImage('assets/profile.png'),
+              backgroundImage: image_path != null
+                  ? FileImage(File(image_path!), scale: 1)
+                  : const AssetImage('assets/profile.png') as ImageProvider,
             ),
             Positioned(
               bottom: 4,
@@ -83,17 +171,14 @@ class _ProfilingWidgetState extends State<ProfilingWidget> {
                   ),
                 ),
                 onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const ProfileWidget()));
+                  showPicker();
                 },
               ),
             )
           ],
         ),
-        const Text('Trifon Mazarakis',
-            style: TextStyle(
+        Text(username ?? 'Gym Bro',
+            style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
             )),
