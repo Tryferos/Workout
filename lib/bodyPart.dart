@@ -75,6 +75,7 @@ class Excercise {
         aliases.add(el);
       });
     }
+    print(json);
     return Excercise(
       name: json['name'],
       bodyPart: json['bodypart'],

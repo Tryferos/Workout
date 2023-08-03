@@ -62,7 +62,14 @@ class _LayoutLandingState extends State<LayoutLanding> {
               const SizedBox(
                 height: 30,
               ),
-              RecentWorkouts(sessionsCurrent: sessionsCurrent),
+              RecentWorkouts(
+                sessionsCurrent: sessionsCurrent,
+                refresh: () {
+                  setState(() {
+                    refresh = !refresh;
+                  });
+                },
+              ),
               const SizedBox(
                 height: 20,
               ),
@@ -103,7 +110,11 @@ class _LayoutLandingState extends State<LayoutLanding> {
                     );
                   }),
               const SizedBox(
-                height: 100,
+                height: 40,
+              ),
+              const SparkWidget(),
+              const SizedBox(
+                height: 50,
               ),
             ],
           ),

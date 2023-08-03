@@ -620,6 +620,7 @@ class ExcerciseInfo {
   }
 
   static Future<Excercise> fetchExcercise(String name) async {
+    print(name);
     final res = await http.get(Uri.parse(
         'https://strengthlevel.com/api/exercises?limit=64&exercise.fields=category,name_url,bodypart,name,count,aliases,icon_url&name=$name&standard=yes'));
     if (res.statusCode == 200) {
@@ -703,7 +704,7 @@ class ExcerciseInfo {
           where: 'sessionId = ?', whereArgs: [item['id']]);
       for (var eItem in eMap) {
         List<String> words = eItem['excerciseName'].toString().split(' ');
-        String name = words.sublist(0, min(2, words.length)).join(' ');
+        String name = words.sublist(0, min(5, words.length)).join(' ');
         if (!fr.any((element) => element.name == name) || name != sName) {
           continue;
         }
@@ -729,7 +730,7 @@ class ExcerciseInfo {
     Map<String, int> dataMap = {};
     for (var item in eMap) {
       List<String> words = item['excerciseName'].toString().split(' ');
-      String name = words.sublist(0, min(2, words.length)).join(' ');
+      String name = words.sublist(0, min(5, words.length)).join(' ');
       if (!dataMap.containsKey(name)) {
         dataMap.putIfAbsent(name, () => 1);
         continue;

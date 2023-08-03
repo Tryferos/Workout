@@ -125,7 +125,10 @@ class _AllWorkoutsState extends State<AllWorkouts> {
 }
 
 class RecentWorkouts extends StatefulWidget {
-  const RecentWorkouts({super.key, required this.sessionsCurrent});
+  const RecentWorkouts(
+      {super.key, required this.sessionsCurrent, required this.refresh});
+
+  final void Function() refresh;
 
   final List<Session> sessionsCurrent;
 
@@ -139,7 +142,6 @@ class _RecentWorkoutsState extends State<RecentWorkouts> {
   @override
   void didUpdateWidget(RecentWorkouts oldWidget) {
     super.didUpdateWidget(oldWidget);
-    print('uodate');
     setState(() {
       bodyPartsTotal = [];
       for (var i = 0; i < min(2, widget.sessionsCurrent.length); i++) {
@@ -225,6 +227,7 @@ class _RecentWorkoutsState extends State<RecentWorkouts> {
                           where: 'id = ?', whereArgs: [sessions[i].id]);
                       setState(() {
                         sessions.removeAt(i);
+                        widget.refresh();
                         bodyPartsTotal.removeAt(i);
                       });
                     },

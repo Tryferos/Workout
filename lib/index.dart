@@ -55,7 +55,7 @@ class Workout extends StatelessWidget {
         toolbarHeight: 70,
         centerTitle: true,
         title: const Text(
-          "Choose your body parts",
+          "Select Body Parts",
           style: TextStyle(color: Colors.white),
         ),
         leading: IconButton(
@@ -81,13 +81,17 @@ class Workout extends StatelessWidget {
                 index: selectedBodyParts.indexOf(bodyParts[index]));
           })),
       floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.start),
+        backgroundColor: Colors.blue,
         onPressed: () {
           if (selectedBodyParts.isEmpty) return;
           Navigator.of(context).push(MaterialPageRoute(
               builder: (context) =>
                   Session(selectedBodyParts: selectedBodyParts)));
         },
+        child: const Icon(
+          Icons.start,
+          color: Colors.white,
+        ),
       ),
     );
   }

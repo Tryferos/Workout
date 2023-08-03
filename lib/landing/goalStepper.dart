@@ -185,6 +185,7 @@ class _GoalStepperWidgetState extends State<GoalStepperWidget> {
     return [
       Step(
           content: AddExcerciseWidget(
+            excerciseName: selectedExcercise?.name,
             changeExcercise: changeExcercise,
           ),
           title: const Text('Select an Excercise')),
@@ -359,9 +360,11 @@ class _AddExcerciseInfoState extends State<AddExcerciseInfo> {
 }
 
 class AddExcerciseWidget extends StatefulWidget {
-  const AddExcerciseWidget({super.key, required this.changeExcercise});
+  const AddExcerciseWidget(
+      {super.key, required this.changeExcercise, required this.excerciseName});
 
   final void Function(Excercise) changeExcercise;
+  final String? excerciseName;
 
   @override
   State<AddExcerciseWidget> createState() => _AddExcerciseWidgetState();
@@ -372,6 +375,8 @@ class _AddExcerciseWidgetState extends State<AddExcerciseWidget> {
   @override
   void initState() {
     super.initState();
+    print('init');
+    if (!mounted) return;
     Excercise.fetchAllExcercises().then((data) => setState(() {
           excercises = data;
         }));
@@ -383,12 +388,14 @@ class _AddExcerciseWidgetState extends State<AddExcerciseWidget> {
       children: [
         DropdownSearch<String>(
           filterFn: (item, filter) {
+            if (!mounted) return false;
             return item.toLowerCase().contains(filter.toLowerCase());
           },
           popupProps: PopupProps.bottomSheet(
             searchDelay: const Duration(milliseconds: 500),
             fit: FlexFit.tight,
             itemBuilder: (context, item, isSelected) {
+              if (!mounted) return const Placeholder();
               int index =
                   excercises!.indexWhere((element) => element.name == item);
               if (index == -1) return const ListTile();
@@ -439,15 +446,17 @@ class _AddExcerciseWidgetState extends State<AddExcerciseWidget> {
             ),
           ),
           asyncItems: (String filter) async {
+            if (!mounted) return [];
             return Future.value((excercises)!.map((e) => e.name).toList());
           },
-          dropdownDecoratorProps: const DropDownDecoratorProps(
+          dropdownDecoratorProps: DropDownDecoratorProps(
             dropdownSearchDecoration: InputDecoration(
-              labelText: "Excercises",
+              labelText: widget.excerciseName ?? "Excercises",
               hintText: "pick an excercise",
             ),
           ),
           onChanged: (newItem) {
+            if (!mounted) return;
             widget.changeExcercise(
                 excercises!.firstWhere((element) => element.name == newItem));
           },
