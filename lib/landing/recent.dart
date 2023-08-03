@@ -37,7 +37,6 @@ class _AllWorkoutsState extends State<AllWorkouts> {
   @override
   void didUpdateWidget(AllWorkouts oldWidget) {
     super.didUpdateWidget(oldWidget);
-    print('updated');
     setState(() {
       bodyPartsTotal = [];
       for (var i = 0; i < sessions.length; i++) {

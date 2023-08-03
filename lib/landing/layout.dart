@@ -35,6 +35,7 @@ class _LayoutLandingState extends State<LayoutLanding> {
         onRefresh: () async {
           List<Session> li = await Session.sessions();
           setState(() {
+            refresh = !refresh;
             if (li.isEmpty) {
               sessionsCurrent = [];
               sessions = [];
@@ -112,7 +113,7 @@ class _LayoutLandingState extends State<LayoutLanding> {
               const SizedBox(
                 height: 40,
               ),
-              const SparkWidget(),
+              SparkWidget(refresh: refresh),
               const SizedBox(
                 height: 50,
               ),

@@ -620,7 +620,6 @@ class ExcerciseInfo {
   }
 
   static Future<Excercise> fetchExcercise(String name) async {
-    print(name);
     final res = await http.get(Uri.parse(
         'https://strengthlevel.com/api/exercises?limit=64&exercise.fields=category,name_url,bodypart,name,count,aliases,icon_url&name=$name&standard=yes'));
     if (res.statusCode == 200) {
@@ -634,7 +633,7 @@ class ExcerciseInfo {
   static Future<void> updateNotes(String newNotes, String name) async {
     final db = await database;
     if (db == null) return;
-    int id = await db.insert(
+    await db.insert(
         'Notes',
         {
           'excerciseName': name,
@@ -718,7 +717,6 @@ class ExcerciseInfo {
         line.weeklyInfo.add(ExcerciseSpikeLineWeeklyInfo(item['date'], effort));
       }
     }
-    print(line);
 
     return line;
   }

@@ -28,7 +28,6 @@ class _ProfileWidgetState extends State<ProfileWidget> {
     setState(() {
       path = image.path;
     });
-    print(image.path);
   }
 
   @override

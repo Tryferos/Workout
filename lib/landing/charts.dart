@@ -27,6 +27,7 @@ class _ExcercisesChartState extends State<ExcercisesChart> {
   void updateList() async {
     list = null;
     final l = await ExcerciseInfo.excercisesFrequent();
+    l.sort((a, b) => b.times - a.times);
     setState(() {
       list = Future.value(l);
     });
@@ -78,14 +79,16 @@ class _ExcercisesChartState extends State<ExcercisesChart> {
                       RadialBarSeries<ExcerciseChart, String>(
                           radius: '100%',
                           cornerStyle: CornerStyle.bothCurve,
-                          gap: '${(5 - (snapshot.data!.length + 1)) * 10}%',
+                          gap:
+                              '${(min(1, 5 - (snapshot.data!.length == 4 ? 2 : snapshot.data!.length + 1))) * 10}%',
                           trackColor: Colors.grey[200]!,
-                          maximumValue: max(
-                              snapshot.data!.isNotEmpty
-                                  ? snapshot.data![0].times.toDouble()
-                                  : 10,
-                              10),
-                          innerRadius: '${80 - snapshot.data!.length * 10}%',
+                          maximumValue: snapshot.data!.isNotEmpty
+                              ? snapshot.data!.length <= 2
+                                  ? max(10, snapshot.data!.length.toDouble())
+                                  : snapshot.data![0].times.toDouble()
+                              : 10,
+                          innerRadius:
+                              '${max(90, (4 + snapshot.data!.length) * 10) - snapshot.data!.length * 10}%',
                           dataSource: snapshot.data,
                           xValueMapper: (ExcerciseChart data, _) => data.name,
                           yValueMapper: (ExcerciseChart data, _) => data.times)
@@ -100,18 +103,27 @@ class _ExcercisesChartState extends State<ExcercisesChart> {
 }
 
 class SparkWidget extends StatefulWidget {
-  const SparkWidget({super.key});
+  const SparkWidget({super.key, required this.refresh});
+
+  final bool refresh;
 
   @override
   State<SparkWidget> createState() => _SparkWidgetState();
 }
 
-enum TimeOffset { d, m, y }
+enum TimeOffset { w, m, y }
 
 class _SparkWidgetState extends State<SparkWidget> {
-  TimeOffset selectedTimeOffset = TimeOffset.d;
+  TimeOffset selectedTimeOffset = TimeOffset.w;
   List<ExcerciseChart> list = [];
   String? selectedExcerciseName;
+  @override
+  setState(void Function() fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
   void handleChange(TimeOffset offset) {
     setState(() {
       selectedTimeOffset = offset;
@@ -121,13 +133,27 @@ class _SparkWidgetState extends State<SparkWidget> {
   @override
   void initState() {
     super.initState();
+    updateFrequent();
+  }
+
+  void updateFrequent() {
     ExcerciseInfo.excercisesFrequent().then((value) {
-      if (value.isEmpty) return;
+      if (value.isEmpty) {
+        selectedExcerciseName = null;
+        list = [];
+        return;
+      }
       setState(() {
         list = value;
         selectedExcerciseName = value[0].name;
       });
     });
+  }
+
+  @override
+  void didUpdateWidget(SparkWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    updateFrequent();
   }
 
   void handleChangeExc(String exc) {
@@ -142,68 +168,80 @@ class _SparkWidgetState extends State<SparkWidget> {
     return Column(children: [
       FutureBuilder(
           builder: (context, snapshot) {
-            return SizedBox(
-              height: 480,
-              child: Column(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.grey,
-                            offset: Offset(0, 2),
-                            blurRadius: 3,
-                          )
-                        ],
-                        borderRadius: BorderRadius.circular(10),
-                        color: Colors.blue),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 2),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          TextButton(
-                              onPressed: () {
-                                showModalBottomSheet(
-                                  backgroundColor: Colors.white,
-                                  elevation: 0,
-                                  context: context,
-                                  builder: (context) {
-                                    return SizedBox(
-                                        height:
-                                            MediaQuery.of(context).size.height *
-                                                (list.length + 0.5) /
-                                                10,
-                                        width:
-                                            MediaQuery.of(context).size.width,
-                                        child: SearchExcercise(
-                                          fList: list,
-                                          handleChangeExc: handleChangeExc,
-                                        ));
-                                  },
-                                );
-                              },
-                              child: Text(
-                                  selectedExcerciseName ?? 'Select Excercise',
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16))),
-                          TimeOffsetWidget(
-                              currentOffset: selectedTimeOffset,
-                              change: handleChange),
-                        ],
-                      ),
+            return selectedExcerciseName != null
+                ? SizedBox(
+                    height: 480,
+                    child: Column(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: Offset(0, 2),
+                                  blurRadius: 3,
+                                )
+                              ],
+                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.blue),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 2),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                TextButton(
+                                    onPressed: () {
+                                      showModalBottomSheet(
+                                        backgroundColor: Colors.white,
+                                        elevation: 0,
+                                        context: context,
+                                        builder: (context) {
+                                          return SizedBox(
+                                              height: MediaQuery.of(context)
+                                                      .size
+                                                      .height *
+                                                  (list.isEmpty
+                                                      ? 1
+                                                      : list.length + 0.5) /
+                                                  10,
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              child: SearchExcercise(
+                                                fList: list,
+                                                handleChangeExc:
+                                                    handleChangeExc,
+                                              ));
+                                        },
+                                      );
+                                    },
+                                    child: Text(
+                                        selectedExcerciseName ??
+                                            'Select an Excercise',
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16))),
+                                TimeOffsetWidget(
+                                    currentOffset: selectedTimeOffset,
+                                    change: handleChange),
+                              ],
+                            ),
+                          ),
+                        ),
+                        snapshot.hasData
+                            ? SparkLine(
+                                name: snapshot.data!.name,
+                                offset: selectedTimeOffset)
+                            : const Padding(
+                                padding: EdgeInsets.only(top: 12),
+                                child: Text("I don't have any data yet"),
+                              )
+                      ],
                     ),
-                  ),
-                  snapshot.hasData
-                      ? SparkLine(
-                          name: snapshot.data!.name, offset: selectedTimeOffset)
-                      : const Text("I don't have any data yet")
-                ],
-              ),
-            );
+                  )
+                : const Opacity(opacity: 0);
           },
           future: selectedExcerciseName != null
               ? ExcerciseInfo.getExcercisesEffort(selectedExcerciseName!)
@@ -249,7 +287,7 @@ class _SearchExcerciseState extends State<SearchExcercise> {
           padding: const EdgeInsets.only(top: 0),
           child: SizedBox(
             height: MediaQuery.of(context).size.height *
-                (widget.fList.length + 0.5) /
+                (widget.fList.isEmpty ? 1 : widget.fList.length + 0.5) /
                 10,
             child: FutureBuilder(
               future: list,
@@ -269,6 +307,8 @@ class _SearchExcerciseState extends State<SearchExcercise> {
                       const SizedBox(
                         height: 10,
                       ),
+                      if (snapshot.data!.isEmpty)
+                        const Center(child: Text('No excercises found...')),
                       ...snapshot.data!.map((excercise) {
                         return ListTile(
                           onTap: () {
@@ -362,8 +402,8 @@ class SparkLine extends StatelessWidget {
 
   String getTextOffset() {
     switch (offset) {
-      case TimeOffset.d:
-        return 'Daily';
+      case TimeOffset.w:
+        return 'Workout';
       case TimeOffset.m:
         return 'Monthly';
       case TimeOffset.y:
@@ -385,25 +425,37 @@ class SparkLine extends StatelessWidget {
                     }
                     return SfCartesianChart(
                       primaryXAxis: CategoryAxis(),
-                      // Chart title
+                      primaryYAxis: NumericAxis(
+                        minimum: 0,
+                        maximum: null,
+                        interval: 250,
+                      ),
                       // Enable legend
                       legend: const Legend(isVisible: true),
+                      trackballBehavior: TrackballBehavior(
+                          enable: true,
+                          tooltipSettings: const InteractiveTooltip(
+                              enable: true,
+                              color: Colors.blue,
+                              format: 'point.x: point.y')),
                       // Enable tooltip
                       tooltipBehavior: TooltipBehavior(enable: true),
                       series: <LineSeries<ExcerciseSpikeLineWeeklyInfo,
                           String>>[
                         LineSeries<ExcerciseSpikeLineWeeklyInfo, String>(
-                            name: '${getTextOffset()} Effort',
-                            dataSource: snapshot.data!.weeklyInfo,
-                            xValueMapper:
-                                (ExcerciseSpikeLineWeeklyInfo sales, _) =>
-                                    getDate(sales.ms, offset),
-                            yValueMapper:
-                                (ExcerciseSpikeLineWeeklyInfo sales, _) =>
-                                    sales.effort,
-                            // Enable data label
-                            dataLabelSettings:
-                                const DataLabelSettings(isVisible: true))
+                          name: '${getTextOffset()} Effort',
+                          dataSource: snapshot.data!.weeklyInfo,
+                          xValueMapper:
+                              (ExcerciseSpikeLineWeeklyInfo sales, _) =>
+                                  getDate(sales.ms, offset),
+                          yValueMapper:
+                              (ExcerciseSpikeLineWeeklyInfo sales, _) =>
+                                  sales.effort,
+                          // Enable data label
+                          dataLabelSettings: const DataLabelSettings(
+                            isVisible: false,
+                          ),
+                        ),
                       ],
                     );
                   }
@@ -415,12 +467,11 @@ class SparkLine extends StatelessWidget {
 //create a function that takes the current date and a parameter of the number of days to go back
 //and returns a string date
 String getDate(int ms, TimeOffset offset) {
-  final DateTime date = DateTime.fromMillisecondsSinceEpoch(ms);
-  //get name of month from date.month
+  final DateTime date = DateTime.fromMillisecondsSinceEpoch(ms + 3600000 * 2);
 
   switch (offset) {
-    case TimeOffset.d:
-      return '${date.day}/${date.month}/${date.year}';
+    case TimeOffset.w:
+      return '${date.day}/${date.month}/${date.year} : ${date.hour}:${date.minute < 10 ? '0' : ''}${date.minute}';
     case TimeOffset.m:
       return DateFormat("MMMM").format(date);
     case TimeOffset.y:

@@ -75,7 +75,6 @@ class Excercise {
         aliases.add(el);
       });
     }
-    print(json);
     return Excercise(
       name: json['name'],
       bodyPart: json['bodypart'],
@@ -117,9 +116,6 @@ class ExcerciseListItem extends StatefulWidget {
   final ExcerciseInfo excerciseInfo;
   final Excercise excercise;
   bool applied = false;
-  // set apply(bool value) {
-  //   applied = value;
-  // }
   ExcerciseListItem(
       {super.key,
       required this.excercise,

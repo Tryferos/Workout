@@ -375,7 +375,6 @@ class _AddExcerciseWidgetState extends State<AddExcerciseWidget> {
   @override
   void initState() {
     super.initState();
-    print('init');
     if (!mounted) return;
     Excercise.fetchAllExcercises().then((data) => setState(() {
           excercises = data;

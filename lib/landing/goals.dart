@@ -10,7 +10,9 @@ import '../excercise.dart';
 import '../main.dart';
 
 class AllGoals extends StatefulWidget {
-  const AllGoals({super.key});
+  const AllGoals({super.key, required this.refresh});
+
+  final bool refresh;
 
   @override
   State<AllGoals> createState() => _AllGoalsState();
@@ -188,15 +190,17 @@ class _WorkoutGoalsState extends State<WorkoutGoals> {
     updateWidget();
   }
 
-  void updateWidget() {
+  void updateWidget() async {
+    List<Goal> updatedList = await Goal.getGoals(false);
     setState(() {
-      list = Goal.getGoals(false);
+      list = Future.value(updatedList);
     });
   }
 
   @override
   void didUpdateWidget(WorkoutGoals oldWidget) {
     super.didUpdateWidget(oldWidget);
+    list = Future.value([]);
     updateWidget();
   }
 
@@ -215,7 +219,10 @@ class _WorkoutGoalsState extends State<WorkoutGoals> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const AllGoals()),
+                    MaterialPageRoute(
+                        builder: (context) => AllGoals(
+                              refresh: widget.refresh,
+                            )),
                   );
                 },
                 child: const Text(
@@ -472,7 +479,7 @@ class WorkoutGoal extends Goal {
                   percentageValues: true,
                   holeRadius: 24,
                   duration: const Duration(milliseconds: 500),
-                  holeLabel: '${(getProgress() * 100).toStringAsFixed(0)}%',
+                  holeLabel: '${(getProgress() * 100).toStringAsFixed(1)}%',
                   key: const Key('chart'),
                   size: const Size(65.0, 65.0),
                   initialChartData: <CircularStackEntry>[
@@ -632,7 +639,6 @@ class SingleExcerciseGoal extends Goal {
   void writeGoal() async {
     final db = await database;
     if (db == null) return;
-    print('inserting');
     int gId = await db.insert('Goals', {
       'title': title,
       'date': date,
