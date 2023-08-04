@@ -1,16 +1,62 @@
-# flutter_application_1
 
-A new Flutter project.
+# Workout App
+This project was made as a part of a personal project. The goal of this project is to create an app i can use for my gym workouts and help me track my progress.
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
+## ⚙ Features
 
-A few resources to get you started if this is your first Flutter project:
+- Track workouts.
+- Add and view goals.
+- Display specific excercise history and notes.
+- Display excercise and workout statisticscs
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 🔎 Tech Stack
+
+**Client:** Written in Dart - Flutter with SQLite.
+
+
+
+## Screenshots
+
+![App Screenshot](https://img001.prntscr.com/file/img001/7oD9DEVLQgqLpXzMRsx1aw.png)
+![App Screenshot](https://img001.prntscr.com/file/img001/4S84eZ1bRFKQyK0UbervTA.png)
+![App Screenshot](https://img001.prntscr.com/file/img001/ssFN6J1QRdelxPnNLRx-jQ.png)
+
+
+## 🎞 Deployment
+In order to run this repo, you will need:
+- Flutter @ https://docs.flutter.dev/get-started/install
+    
+## 🎨 Run Locally
+
+Clone the project
+
+```bash
+  git clone https://github.com/Tryferos/Workout
+```
+
+Go to the project directory
+
+```bash
+  cd my-project
+```
+
+Make sure you have flutter installed and setup.
+
+
+Start the server
+
+```bash
+  flutter run
+```
+
+
+## Badges
+
+Add badges from somewhere like: [shields.io](https://shields.io/)
+
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
+[![AGPL License](https://img.shields.io/badge/license-AGPL-blue.svg)](http://www.gnu.org/licenses/agpl-3.0)
+
