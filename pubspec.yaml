@@ -73,6 +73,10 @@ flutter:
   assets:
     - assets/weight-icon-png-16.jpg
     - assets/profile.png
+    - assets/gym_bro_cert.png
+    - assets/steroids_cert.png
+    - assets/olympia_cert.png
+    - assets/pose_cert.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

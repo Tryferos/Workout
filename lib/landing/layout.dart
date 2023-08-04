@@ -56,6 +56,7 @@ class _LayoutLandingState extends State<LayoutLanding> {
             child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: ListView(
+            cacheExtent: 1000,
             addAutomaticKeepAlives: true,
             scrollDirection: Axis.vertical,
             children: [

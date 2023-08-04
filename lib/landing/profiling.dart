@@ -149,40 +149,123 @@ class _ProfilingWidgetState extends State<ProfilingWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Stack(
-          children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: image_path != null
-                  ? FileImage(File(image_path!), scale: 1)
-                  : const AssetImage('assets/profile.png') as ImageProvider,
-            ),
-            Positioned(
-              bottom: 4,
-              right: 4,
-              child: GestureDetector(
-                child: const CircleAvatar(
-                  radius: 12,
-                  backgroundColor: Colors.blue,
-                  child: Icon(
-                    Icons.edit,
-                    color: Colors.white,
-                    size: 15,
+        SizedBox(
+          width: MediaQuery.of(context).size.width,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Column(
+                children: [
+                  Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundImage: image_path != null
+                            ? FileImage(File(image_path!), scale: 1)
+                            : const AssetImage('assets/profile.png')
+                                as ImageProvider,
+                      ),
+                      Positioned(
+                        bottom: 4,
+                        right: 4,
+                        child: GestureDetector(
+                          child: const CircleAvatar(
+                            radius: 12,
+                            backgroundColor: Colors.blue,
+                            child: Icon(
+                              Icons.edit,
+                              color: Colors.white,
+                              size: 15,
+                            ),
+                          ),
+                          onTap: () {
+                            showPicker();
+                          },
+                        ),
+                      )
+                    ],
                   ),
-                ),
-                onTap: () {
-                  showPicker();
-                },
+                  Text(username ?? 'Gym Bro',
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      )),
+                  const SizedBox(height: 16),
+                ],
               ),
-            )
-          ],
+              (workoutsNumber >= 10)
+                  ? Positioned(
+                      top: 0,
+                      left: 0,
+                      child: Tooltip(
+                        message: 'This certification is given to users who\n'
+                            'have completed more than 10 workouts in total.',
+                        child: Image.asset(
+                          'assets/gym_bro_cert.png',
+                          width: 64,
+                          height: 64,
+                        ),
+                      ),
+                    )
+                  : Container(),
+              (workoutsNumber >= 100)
+                  ? Positioned(
+                      top: 0,
+                      right: 0,
+                      child: Tooltip(
+                        message: 'This certification is given to users who\n'
+                            'have completed more than 100 workouts in total.',
+                        child: Image.asset(
+                          'assets/olympia_cert.png',
+                          width: 64,
+                          height: 64,
+                        ),
+                      ),
+                    )
+                  : Container(),
+              FutureBuilder(
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData && double.parse(snapshot.data!) >= 5) {
+                      return Positioned(
+                        top: 74,
+                        left: 0,
+                        child: Tooltip(
+                          message: 'This certification is given to users who\n'
+                              'average 5 or more workouts per week.',
+                          child: Image.asset(
+                            'assets/steroids_cert.png',
+                            width: 64,
+                            height: 64,
+                          ),
+                        ),
+                      );
+                    }
+                    return Container();
+                  },
+                  future: averageWorkouts),
+              FutureBuilder(
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData && double.parse(snapshot.data!) <= 1) {
+                      return Positioned(
+                        top: 74,
+                        right: 0,
+                        child: Tooltip(
+                          message: 'This certification is given to users who\n'
+                              'average 1 or less workouts per week.',
+                          child: Image.asset(
+                            'assets/pose_cert.png',
+                            width: 64,
+                            height: 64,
+                          ),
+                        ),
+                      );
+                    }
+                    return Container();
+                  },
+                  future: averageWorkouts)
+            ],
+          ),
         ),
-        Text(username ?? 'Gym Bro',
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            )),
-        const SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
