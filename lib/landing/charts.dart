@@ -28,9 +28,7 @@ class _WorkoutsChartState extends State<WorkoutsChart> {
       List<WorkoutChartType> tmp = [];
       for (var i = 0; i < value.length; i++) {
         tmp.add(WorkoutChartType(
-            DateTime.fromMillisecondsSinceEpoch(value[i].date)
-                .subtract(Duration(days: i <= 2 ? 35 : 1)),
-            i));
+            DateTime.fromMillisecondsSinceEpoch(value[i].date), i));
       }
       tmp.sort((a, b) => a.date.compareTo(b.date));
       setState(() {
@@ -681,10 +679,8 @@ class _SparkLineState extends State<SparkLine> {
   }
 }
 
-//create a function that takes the current date and a parameter of the number of days to go back
-//and returns a string date
 String getDate(int ms, TimeOffset offset) {
-  final DateTime date = DateTime.fromMillisecondsSinceEpoch(ms + 3600000 * 2);
+  final DateTime date = DateTime.fromMillisecondsSinceEpoch(ms);
 
   switch (offset) {
     case TimeOffset.w:

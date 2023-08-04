@@ -243,26 +243,6 @@ class _ProfilingWidgetState extends State<ProfilingWidget> {
                     return Container();
                   },
                   future: averageWorkouts),
-              FutureBuilder(
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData && double.parse(snapshot.data!) <= 1) {
-                      return Positioned(
-                        top: 74,
-                        right: 0,
-                        child: Tooltip(
-                          message: 'This certification is given to users who\n'
-                              'average 1 or less workouts per week.',
-                          child: Image.asset(
-                            'assets/pose_cert.png',
-                            width: 64,
-                            height: 64,
-                          ),
-                        ),
-                      );
-                    }
-                    return Container();
-                  },
-                  future: averageWorkouts)
             ],
           ),
         ),
