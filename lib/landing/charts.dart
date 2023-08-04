@@ -1,11 +1,107 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/database.dart';
 import 'package:flutter_application_1/excercise.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../bodyPart.dart';
+
+class WorkoutsChart extends StatefulWidget {
+  const WorkoutsChart({super.key});
+
+  @override
+  State<WorkoutsChart> createState() => _WorkoutsChartState();
+}
+
+class _WorkoutsChartState extends State<WorkoutsChart> {
+  Future<List<WorkoutChartType>>? list;
+  @override
+  void initState() {
+    super.initState();
+    updateList();
+  }
+
+  void updateList() {
+    Session.sessions().then((value) {
+      List<WorkoutChartType> tmp = [];
+      for (var i = 0; i < value.length; i++) {
+        tmp.add(WorkoutChartType(
+            DateTime.fromMillisecondsSinceEpoch(value[i].date)
+                .subtract(Duration(days: i <= 2 ? 35 : 1)),
+            i));
+      }
+      tmp.sort((a, b) => a.date.compareTo(b.date));
+      setState(() {
+        list = Future.value(tmp);
+      });
+    });
+  }
+
+  @override
+  void setState(void Function() fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return Column(
+          children: [
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Workouts',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const Divider(
+              height: 22,
+              color: Colors.grey,
+            ),
+            SfCartesianChart(
+                primaryXAxis: DateTimeAxis(
+                  dateFormat: DateFormat.MMM(),
+                  minimum: DateTime.now().subtract(const Duration(days: 120)),
+                  maximum: DateTime.now().add(const Duration(days: 30)),
+                ),
+                primaryYAxis: NumericAxis(
+                  minimum: 0,
+                  maximum: 30,
+                  interval: 5,
+                ),
+                tooltipBehavior: TooltipBehavior(enable: true),
+                series: <ChartSeries<WorkoutChartType, DateTime>>[
+                  BubbleSeries(
+                    name: 'Workouts',
+                    dataSource: snapshot.data ?? [],
+                    xValueMapper: (WorkoutChartType data, _) => data.date,
+                    yValueMapper: (WorkoutChartType data, _) => data.times,
+                    sizeValueMapper: (WorkoutChartType data, _) => data.times,
+                  )
+                ]),
+          ],
+        );
+      },
+      future: list,
+    );
+  }
+}
+
+class WorkoutChartType {
+  final DateTime date;
+  final int times;
+  WorkoutChartType(this.date, this.times);
+}
 
 class ExcercisesChart extends StatefulWidget {
   const ExcercisesChart({super.key, required this.refresh});
@@ -22,6 +118,13 @@ class _ExcercisesChartState extends State<ExcercisesChart> {
   void initState() {
     super.initState();
     updateList();
+  }
+
+  @override
+  void setState(void Function() fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
   }
 
   void updateList() async {
@@ -117,6 +220,7 @@ class _SparkWidgetState extends State<SparkWidget> {
   TimeOffset selectedTimeOffset = TimeOffset.w;
   List<ExcerciseChart> list = [];
   String? selectedExcerciseName;
+  String? selectedExcerciseCategory;
   @override
   setState(void Function() fn) {
     if (mounted) {
@@ -140,12 +244,14 @@ class _SparkWidgetState extends State<SparkWidget> {
     ExcerciseInfo.excercisesFrequent().then((value) {
       if (value.isEmpty) {
         selectedExcerciseName = null;
+        selectedExcerciseCategory = null;
         list = [];
         return;
       }
       setState(() {
         list = value;
         selectedExcerciseName = value[0].name;
+        selectedExcerciseCategory = 'Dumbbell';
       });
     });
   }
@@ -156,10 +262,11 @@ class _SparkWidgetState extends State<SparkWidget> {
     updateFrequent();
   }
 
-  void handleChangeExc(String exc) {
+  void handleChangeExc(String exc, String category) {
     if (!mounted) return;
     setState(() {
       selectedExcerciseName = exc;
+      selectedExcerciseCategory = category;
     });
   }
 
@@ -232,6 +339,7 @@ class _SparkWidgetState extends State<SparkWidget> {
                         ),
                         snapshot.hasData
                             ? SparkLine(
+                                excType: selectedExcerciseCategory!,
                                 name: snapshot.data!.name,
                                 offset: selectedTimeOffset)
                             : const Padding(
@@ -254,7 +362,7 @@ class SearchExcercise extends StatefulWidget {
   const SearchExcercise(
       {super.key, required this.handleChangeExc, required this.fList});
 
-  final void Function(String) handleChangeExc;
+  final void Function(String, String) handleChangeExc;
   final List<ExcerciseChart> fList;
 
   @override
@@ -312,7 +420,8 @@ class _SearchExcerciseState extends State<SearchExcercise> {
                       ...snapshot.data!.map((excercise) {
                         return ListTile(
                           onTap: () {
-                            widget.handleChangeExc(excercise.getName);
+                            widget.handleChangeExc(
+                                excercise.getName, excercise.category);
                             Navigator.of(context).pop();
                           },
                           tileColor: Colors.transparent,
@@ -393,12 +502,30 @@ class TimeOffsetWidget extends StatelessWidget {
   }
 }
 
-class SparkLine extends StatelessWidget {
-  const SparkLine({super.key, required this.name, required this.offset});
+enum ExcerciseInfoType { effort, weight, reps }
 
-  final TimeOffset offset;
+class SparkLine extends StatefulWidget {
+  const SparkLine(
+      {super.key,
+      required this.name,
+      required this.offset,
+      required this.excType});
+
+  final String excType;
 
   final String name;
+  final TimeOffset offset;
+
+  @override
+  State<SparkLine> createState() => _SparkLineState();
+}
+
+class _SparkLineState extends State<SparkLine> {
+  TimeOffset get offset => widget.offset;
+
+  String get name => widget.name;
+
+  String get category => widget.excType;
 
   String getTextOffset() {
     switch (offset) {
@@ -409,6 +536,40 @@ class SparkLine extends StatelessWidget {
       case TimeOffset.y:
         return 'Yearly';
     }
+  }
+
+  ExcerciseInfoType selectedInfo = ExcerciseInfoType.effort;
+  void changeSelectedInfo(ExcerciseInfoType type) {
+    setState(() {
+      selectedInfo = type;
+    });
+  }
+
+  double getMax() {
+    if (category == "Dumbbell") return 25;
+    if (category == "Machine") return 100;
+    if (category == "Cable") return 60;
+    if (category == "Bodyweight") return 50;
+    if (category == "Barbell") return 100;
+    return 1;
+  }
+
+  double getIncrement() {
+    if (category == "Barbell" ||
+        category == "Bodyweight" ||
+        category == "Dumbbell") return 2.5;
+    if (category == "Machine") return 10;
+    if (category == "Cable") return 5;
+    return 1;
+  }
+
+  double getMin() {
+    if (category == "Dumbbell") return 5;
+    if (category == "Machine") return 20;
+    if (category == "Cable") return 5;
+    if (category == "Bodyweight") return 0;
+    if (category == "Barbell") return 10;
+    return 1;
   }
 
   @override
@@ -426,24 +587,50 @@ class SparkLine extends StatelessWidget {
                     return SfCartesianChart(
                       primaryXAxis: CategoryAxis(),
                       primaryYAxis: NumericAxis(
-                        minimum: 0,
+                        visibleMinimum:
+                            selectedInfo == ExcerciseInfoType.reps ? 2 : null,
+                        minimum: selectedInfo == ExcerciseInfoType.weight
+                            ? getMin()
+                            : selectedInfo == ExcerciseInfoType.reps
+                                ? 1
+                                : 0,
                         maximum: null,
-                        interval: 250,
+                        interval: selectedInfo == ExcerciseInfoType.effort
+                            ? 150
+                            : selectedInfo == ExcerciseInfoType.weight
+                                ? getIncrement()
+                                : 2,
                       ),
                       // Enable legend
-                      legend: const Legend(isVisible: true),
+                      legend: const Legend(
+                          isVisible: true, toggleSeriesVisibility: false),
+                      onLegendTapped: (legendTapArgs) {
+                        if (legendTapArgs.seriesIndex == null) return;
+                        int index = legendTapArgs.seriesIndex!;
+                        ExcerciseInfoType type = index == 0
+                            ? ExcerciseInfoType.effort
+                            : index == 1
+                                ? ExcerciseInfoType.weight
+                                : ExcerciseInfoType.reps;
+                        setState(() {
+                          selectedInfo = type;
+                        });
+                      },
                       trackballBehavior: TrackballBehavior(
                           enable: true,
                           tooltipSettings: const InteractiveTooltip(
                               enable: true,
                               color: Colors.blue,
-                              format: 'point.x: point.y')),
+                              format: 'point.x : point.y')),
                       // Enable tooltip
-                      tooltipBehavior: TooltipBehavior(enable: true),
+                      tooltipBehavior: TooltipBehavior(
+                        enable: true,
+                      ),
                       series: <LineSeries<ExcerciseSpikeLineWeeklyInfo,
                           String>>[
                         LineSeries<ExcerciseSpikeLineWeeklyInfo, String>(
-                          name: '${getTextOffset()} Effort',
+                          isVisible: selectedInfo == ExcerciseInfoType.effort,
+                          name: 'Effort',
                           dataSource: snapshot.data!.weeklyInfo,
                           xValueMapper:
                               (ExcerciseSpikeLineWeeklyInfo sales, _) =>
@@ -451,6 +638,36 @@ class SparkLine extends StatelessWidget {
                           yValueMapper:
                               (ExcerciseSpikeLineWeeklyInfo sales, _) =>
                                   sales.effort,
+                          // Enable data label
+                          dataLabelSettings: const DataLabelSettings(
+                            isVisible: false,
+                          ),
+                        ),
+                        LineSeries<ExcerciseSpikeLineWeeklyInfo, String>(
+                          isVisible: selectedInfo == ExcerciseInfoType.weight,
+                          name: 'Weight',
+                          dataSource: snapshot.data!.weeklyInfo,
+                          xValueMapper:
+                              (ExcerciseSpikeLineWeeklyInfo sales, _) =>
+                                  getDate(sales.ms, offset),
+                          yValueMapper:
+                              (ExcerciseSpikeLineWeeklyInfo sales, _) =>
+                                  sales.weight,
+                          // Enable data label
+                          dataLabelSettings: const DataLabelSettings(
+                            isVisible: false,
+                          ),
+                        ),
+                        LineSeries<ExcerciseSpikeLineWeeklyInfo, String>(
+                          isVisible: selectedInfo == ExcerciseInfoType.reps,
+                          name: 'Reps',
+                          dataSource: snapshot.data!.weeklyInfo,
+                          xValueMapper:
+                              (ExcerciseSpikeLineWeeklyInfo sales, _) =>
+                                  getDate(sales.ms, offset),
+                          yValueMapper:
+                              (ExcerciseSpikeLineWeeklyInfo sales, _) =>
+                                  sales.reps,
                           // Enable data label
                           dataLabelSettings: const DataLabelSettings(
                             isVisible: false,
@@ -471,7 +688,7 @@ String getDate(int ms, TimeOffset offset) {
 
   switch (offset) {
     case TimeOffset.w:
-      return '${date.day}/${date.month}/${date.year} : ${date.hour}:${date.minute < 10 ? '0' : ''}${date.minute}';
+      return '${date.day}/${date.month}/${date.year} - ${date.hour}:${date.minute < 10 ? '0' : ''}${date.minute}';
     case TimeOffset.m:
       return DateFormat("MMMM").format(date);
     case TimeOffset.y:
@@ -492,7 +709,9 @@ class ExcerciseSpikeLine {
 class ExcerciseSpikeLineWeeklyInfo {
   final int ms;
   double effort;
-  ExcerciseSpikeLineWeeklyInfo(this.ms, this.effort);
+  double weight;
+  double reps;
+  ExcerciseSpikeLineWeeklyInfo(this.ms, this.effort, this.weight, this.reps);
   @override
   String toString() {
     return '$ms $effort';

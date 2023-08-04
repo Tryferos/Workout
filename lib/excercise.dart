@@ -279,11 +279,9 @@ class _ExcerciseInputsState extends State<ExcerciseInputs> {
   }
 
   double getIncrement() {
-    if (category == "Barbell" ||
-        category == "Bodyweight" ||
-        category == "Dumbbell") return 2.5;
+    if (category == "Barbell" || category == "Dumbbell") return 2.5;
     if (category == "Machine") return 10;
-    if (category == "Cable") return 5;
+    if (category == "Cable" || category == 'Bodyweight') return 5;
     return 1;
   }
 
@@ -710,11 +708,16 @@ class ExcerciseInfo {
         final List<Map<String, dynamic>> setMap = await db.query('Sets',
             where: 'excerciseInfoId = ?', whereArgs: [eItem['id']]);
         double effort = 0;
+        double weight = 0;
+        double reps = 0;
         for (var s in setMap) {
           effort += (s['reps'] * 0.75) * s['weight'];
+          weight += s['weight'];
+          reps += s['reps'];
         }
         line ??= ExcerciseSpikeLine(name);
-        line.weeklyInfo.add(ExcerciseSpikeLineWeeklyInfo(item['date'], effort));
+        line.weeklyInfo.add(ExcerciseSpikeLineWeeklyInfo(item['date'], effort,
+            weight / setMap.length, reps / setMap.length));
       }
     }
 

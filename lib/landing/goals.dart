@@ -190,6 +190,13 @@ class _WorkoutGoalsState extends State<WorkoutGoals> {
     updateWidget();
   }
 
+  @override
+  void setState(void Function() fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
   void updateWidget() async {
     List<Goal> updatedList = await Goal.getGoals(false);
     setState(() {

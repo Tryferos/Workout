@@ -56,7 +56,7 @@ class _LayoutLandingState extends State<LayoutLanding> {
             child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: ListView(
-            addAutomaticKeepAlives: false,
+            addAutomaticKeepAlives: true,
             scrollDirection: Axis.vertical,
             children: [
               ProfilingWidget(sessionsCurrent: sessionsCurrent),
@@ -93,7 +93,7 @@ class _LayoutLandingState extends State<LayoutLanding> {
               const SizedBox(
                 height: 20,
               ),
-              ExcercisesChart(refresh: refresh),
+              SparkWidget(refresh: refresh),
               const SizedBox(
                 height: 20,
               ),
@@ -113,7 +113,11 @@ class _LayoutLandingState extends State<LayoutLanding> {
               const SizedBox(
                 height: 40,
               ),
-              SparkWidget(refresh: refresh),
+              const WorkoutsChart(),
+              const SizedBox(
+                height: 40,
+              ),
+              ExcercisesChart(refresh: refresh),
               const SizedBox(
                 height: 50,
               ),
