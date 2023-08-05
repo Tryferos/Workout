@@ -4,6 +4,7 @@ import 'package:flutter_application_1/landing/charts.dart';
 import 'package:flutter_application_1/landing/goals.dart';
 import 'package:flutter_application_1/landing/profiling.dart';
 import 'package:flutter_application_1/landing/recent.dart';
+import 'package:flutter_application_1/landing/schedule.dart';
 
 import '../database.dart';
 import '../index.dart';
@@ -115,6 +116,10 @@ class _LayoutLandingState extends State<LayoutLanding> {
                 height: 40,
               ),
               const WorkoutsChart(),
+              const SizedBox(
+                height: 40,
+              ),
+              const Schedule(),
               const SizedBox(
                 height: 40,
               ),

@@ -15,6 +15,8 @@ void main() async {
       await db.execute("PRAGMA foreign_keys=ON");
     },
     onCreate: (db, version) async {
+      await db.execute(
+          'create table if not exists Schedule(id integer primary key autoincrement not null, bodyParts text, day text)');
       //Goals
       await db.execute(
           'create table if not exists Profile(id integer primary key autoincrement not null, username text, image_path text)');

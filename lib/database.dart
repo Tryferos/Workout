@@ -81,6 +81,32 @@ class Session {
     });
   }
 
+  static Future<List<Session>> sessionsRecent(int dayIndex) async {
+    final db = await database;
+    if (db == null) return [];
+    DateTime date = DateTime.now().subtract(Duration(days: dayIndex));
+
+    // Query the table for all The Dogs.
+    final List<Map<String, dynamic>> sessionMap = await db.query('session',
+        orderBy: 'date DESC',
+        where: 'date > ?',
+        whereArgs: [date.millisecondsSinceEpoch]);
+    List<List<ExcerciseInfo>> excerciseInfo = [];
+    for (var session in sessionMap) {
+      excerciseInfo.add(await ExcerciseInfo.excercisesInfo(session['id']));
+    }
+
+    // Convert the List<Map<String, dynamic> into a List<Dog>.
+    return List.generate(sessionMap.length, (i) {
+      return Session(
+        id: sessionMap[i]['id'],
+        date: sessionMap[i]['date'],
+        duration: sessionMap[i]['duration'],
+        excerciseInfo: excerciseInfo[i],
+      );
+    });
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'date': date,

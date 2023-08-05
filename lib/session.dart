@@ -21,15 +21,17 @@ class _SessionState extends State<Session> {
   List<BodyPartData> bodyPartData = [];
   List<ExcerciseInfo> excerciseInfo = [];
   Timer? timer;
+  DateTime? startTime;
   bool dialogOpen = false;
   Duration duration = const Duration(seconds: 0);
   @override
   void initState() {
     super.initState();
+    startTime = DateTime.now();
     duration = const Duration(seconds: 0);
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
-        duration += const Duration(seconds: 1);
+        duration = DateTime.now().difference(startTime!);
       });
     });
   }

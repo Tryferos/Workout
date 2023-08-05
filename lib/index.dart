@@ -67,19 +67,18 @@ class Workout extends StatelessWidget {
         backgroundColor: Colors.blue,
         elevation: 2,
       ),
-      body: GridView.count(
+      body: ListView.separated(
+          shrinkWrap: true,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          crossAxisCount: 2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
           scrollDirection: Axis.vertical,
-          // Generate 100 widgets that display their index in the List.
-          children: List.generate(bodyParts.length, (index) {
+          itemCount: bodyParts.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
             return BodyPartItem(
                 title: bodyParts[index],
                 onTap: onTap,
                 index: selectedBodyParts.indexOf(bodyParts[index]));
-          })),
+          }),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blue,
         onPressed: () {

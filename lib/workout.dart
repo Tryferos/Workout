@@ -74,79 +74,68 @@ class _BodyPartItemState extends State<BodyPartItem> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        widget.onTap(title);
-      },
-      child: Container(
-          height: 60,
-          // margin: const EdgeInsets.all(5),
-          padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
-          decoration: BoxDecoration(
-            color: getBackgroundColor(),
-            borderRadius: const BorderRadius.all(Radius.circular(8)),
-            border: !isSelected()
-                ? Border.all(color: Colors.blue, width: 1.25)
-                : null,
-          ),
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
+        onTap: () {
+          widget.onTap(title);
+        },
+        child: Container(
+            height: 60,
+            padding: const EdgeInsets.fromLTRB(24, 4, 24, 4),
+            decoration: BoxDecoration(
+              color: getBackgroundColor(),
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              border: !isSelected()
+                  ? Border.all(color: Colors.blue, width: 1.25)
+                  : null,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Expanded(
-                        flex: 8,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(title,
-                                style: TextStyle(
-                                    fontSize: 22,
-                                    color: getTextColor(),
-                                    fontWeight: FontWeight.w500)),
-                            const SizedBox(height: 16),
-                            Container(
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                    color: isSelected()
-                                        ? Colors.white
-                                        : Colors.blue,
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(4))),
-                                height: 32,
-                                width: 32,
-                                child: isSelected()
-                                    ? Text(
-                                        (widget.index + 1).toString(),
-                                        style: const TextStyle(
-                                            color: Colors.blue,
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w600,
-                                            fontFamily: 'Roboto'),
-                                      )
-                                    : const Icon(
-                                        Icons.add,
-                                        color: Colors.white,
-                                        size: 24,
-                                      )),
-                          ],
-                        )),
-                    Expanded(
-                      flex: 1,
-                      child: Container(
-                        width: MediaQuery.of(context).size.width * 0.35,
-                        alignment: Alignment.center,
-                        child: Text(lastWorkout,
-                            style: TextStyle(
-                                color: getTextColor(),
-                                fontWeight: FontWeight.w400)),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.6,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(title,
+                          style: TextStyle(
+                              fontSize: 20,
+                              color: getTextColor(),
+                              fontWeight: FontWeight.w500)),
+                      const SizedBox(
+                        width: 8,
                       ),
-                    )
-                  ],
-                )
-              ])),
-    );
+                      Container(
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                              color: isSelected() ? Colors.white : Colors.blue,
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(4))),
+                          height: 28,
+                          width: 28,
+                          child: isSelected()
+                              ? Text(
+                                  (widget.index + 1).toString(),
+                                  style: const TextStyle(
+                                      color: Colors.blue,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      fontFamily: 'Roboto'),
+                                )
+                              : const Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                  size: 20,
+                                )),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: MediaQuery.of(context).size.width * 0.15,
+                  alignment: Alignment.center,
+                  child: Text(lastWorkout,
+                      style: TextStyle(
+                          color: getTextColor(), fontWeight: FontWeight.w400)),
+                ),
+              ],
+            )));
   }
 }
