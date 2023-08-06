@@ -44,6 +44,9 @@ dependencies:
   circular_chart_flutter: ^0.0.2
   syncfusion_flutter_charts: ^22.2.5
   image_picker: ^1.0.1
+  pedometer: ^4.0.1
+  health: ^7.0.1
+  permission_handler: ^10.4.3
 
 
 dev_dependencies:

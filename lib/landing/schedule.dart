@@ -44,8 +44,7 @@ class _ScheduleState extends State<Schedule> {
         ),
         SizedBox(
           height: 65,
-          child: Expanded(
-              child: ListView.separated(
+          child: ListView.separated(
             scrollDirection: Axis.horizontal,
             shrinkWrap: true,
             itemBuilder: (context, index) {
@@ -55,7 +54,7 @@ class _ScheduleState extends State<Schedule> {
                     return getDayWidget(index, snapshot.data as List<Session>);
                   }
                   return const Center(
-                    child: CircularProgressIndicator(),
+                    child: Center(child: CircularProgressIndicator()),
                   );
                 },
                 future: Session.sessionsRecent(DateTime.now().weekday - 1),
@@ -67,7 +66,7 @@ class _ScheduleState extends State<Schedule> {
                 width: 12,
               );
             },
-          )),
+          ),
         ),
       ],
     );

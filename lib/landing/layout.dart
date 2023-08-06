@@ -5,10 +5,15 @@ import 'package:flutter_application_1/landing/goals.dart';
 import 'package:flutter_application_1/landing/profiling.dart';
 import 'package:flutter_application_1/landing/recent.dart';
 import 'package:flutter_application_1/landing/schedule.dart';
+import 'package:flutter_application_1/landing/steps.dart';
+import 'package:health/health.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../database.dart';
 import '../index.dart';
 import '../main.dart';
+
+const types = [HealthDataType.STEPS, HealthDataType.WEIGHT];
 
 class LayoutLanding extends StatefulWidget {
   const LayoutLanding({super.key});
@@ -19,6 +24,7 @@ class LayoutLanding extends StatefulWidget {
 
 class _LayoutLandingState extends State<LayoutLanding> {
   List<Session> sessionsCurrent = [];
+  HealthFactory? health;
   bool refresh = false;
   @override
   void initState() {
@@ -26,6 +32,14 @@ class _LayoutLandingState extends State<LayoutLanding> {
     setState(() {
       sessionsCurrent = sessions;
     });
+    health = HealthFactory(useHealthConnectIfAvailable: true);
+    requestPermissions();
+  }
+
+  void requestPermissions() async {
+    await Permission.activityRecognition.request();
+    await Permission.location.request();
+    await health!.requestAuthorization(types);
   }
 
   @override
@@ -57,11 +71,11 @@ class _LayoutLandingState extends State<LayoutLanding> {
             child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: ListView(
-            cacheExtent: 1000,
+            cacheExtent: 2700,
             addAutomaticKeepAlives: true,
             scrollDirection: Axis.vertical,
             children: [
-              ProfilingWidget(sessionsCurrent: sessionsCurrent),
+              ProfilingWidget(sessionsCurrent: sessionsCurrent, health: health),
               const SizedBox(
                 height: 30,
               ),
@@ -120,6 +134,12 @@ class _LayoutLandingState extends State<LayoutLanding> {
                 height: 40,
               ),
               const Schedule(),
+              const SizedBox(
+                height: 40,
+              ),
+              StepsSparkLine(
+                health: health,
+              ),
               const SizedBox(
                 height: 40,
               ),

@@ -1,15 +1,20 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:health/health.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../database.dart';
 import '../main.dart';
+import 'layout.dart';
 
 class ProfilingWidget extends StatefulWidget {
-  const ProfilingWidget({super.key, required this.sessionsCurrent});
+  const ProfilingWidget(
+      {super.key, required this.sessionsCurrent, required this.health});
 
   final List<Session> sessionsCurrent;
+  final HealthFactory? health;
 
   @override
   State<ProfilingWidget> createState() => _ProfilingWidgetState();
@@ -260,6 +265,7 @@ class _ProfilingWidgetState extends State<ProfilingWidget> {
                         fontSize: 20, fontWeight: FontWeight.w400)),
               ],
             ),
+            DailyStepCounter(health: widget.health),
             Column(
               children: [
                 const Text(
@@ -280,6 +286,57 @@ class _ProfilingWidgetState extends State<ProfilingWidget> {
             ),
           ],
         )
+      ],
+    );
+  }
+}
+
+class DailyStepCounter extends StatefulWidget {
+  const DailyStepCounter({super.key, required this.health});
+
+  final HealthFactory? health;
+
+  @override
+  State<DailyStepCounter> createState() => _DailyStepCounterState();
+}
+
+class _DailyStepCounterState extends State<DailyStepCounter> {
+  int steps = 0;
+
+  HealthFactory? get health => widget.health;
+
+  void test() async {
+    if (health == null) return;
+    var now = DateTime.now();
+
+    // fetch health data from the last 24 hours
+    List<HealthDataPoint> healthData = await health!.getHealthDataFromTypes(
+        now.subtract(const Duration(days: 1)), now, types);
+
+    // get the number of steps for today
+    var midnight = DateTime(now.year, now.month, now.day);
+    int? tmp = await health!.getTotalStepsInInterval(midnight, now);
+    setState(() {
+      steps = tmp ?? -1;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    test();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const Text(
+          'Steps',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        Text('$steps',
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w400))
       ],
     );
   }
