@@ -594,7 +594,7 @@ class _SparkLineState extends State<SparkLine> {
                                 : 0,
                         maximum: null,
                         interval: selectedInfo == ExcerciseInfoType.effort
-                            ? 150
+                            ? getIncrement() * 100
                             : selectedInfo == ExcerciseInfoType.weight
                                 ? getIncrement()
                                 : 2,
@@ -624,9 +624,24 @@ class _SparkLineState extends State<SparkLine> {
                       tooltipBehavior: TooltipBehavior(
                         enable: true,
                       ),
-                      series: <LineSeries<ExcerciseSpikeLineWeeklyInfo,
+                      series: <AreaSeries<ExcerciseSpikeLineWeeklyInfo,
                           String>>[
-                        LineSeries<ExcerciseSpikeLineWeeklyInfo, String>(
+                        AreaSeries<ExcerciseSpikeLineWeeklyInfo, String>(
+                          color: Colors.blue[100]!,
+                          borderDrawMode: BorderDrawMode.excludeBottom,
+                          borderColor: Colors.blue,
+                          borderWidth: 2,
+                          gradient: LinearGradient(
+                              colors: [
+                                Colors.blue[100]!,
+                                Colors.blue[300]!,
+                              ],
+                              stops: const [
+                                0.3,
+                                0.9
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter),
                           isVisible: selectedInfo == ExcerciseInfoType.effort,
                           name: 'Effort',
                           dataSource: snapshot.data!.weeklyInfo,
@@ -641,7 +656,22 @@ class _SparkLineState extends State<SparkLine> {
                             isVisible: false,
                           ),
                         ),
-                        LineSeries<ExcerciseSpikeLineWeeklyInfo, String>(
+                        AreaSeries<ExcerciseSpikeLineWeeklyInfo, String>(
+                          color: Colors.blue[100]!,
+                          borderDrawMode: BorderDrawMode.excludeBottom,
+                          borderColor: Colors.blue,
+                          borderWidth: 2,
+                          gradient: LinearGradient(
+                              colors: [
+                                Colors.blue[100]!,
+                                Colors.blue[300]!,
+                              ],
+                              stops: const [
+                                0.3,
+                                0.9
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter),
                           isVisible: selectedInfo == ExcerciseInfoType.weight,
                           name: 'Weight',
                           dataSource: snapshot.data!.weeklyInfo,
@@ -656,7 +686,22 @@ class _SparkLineState extends State<SparkLine> {
                             isVisible: false,
                           ),
                         ),
-                        LineSeries<ExcerciseSpikeLineWeeklyInfo, String>(
+                        AreaSeries<ExcerciseSpikeLineWeeklyInfo, String>(
+                          color: Colors.blue[100]!,
+                          borderDrawMode: BorderDrawMode.excludeBottom,
+                          borderColor: Colors.blue,
+                          borderWidth: 2,
+                          gradient: LinearGradient(
+                              colors: [
+                                Colors.blue[100]!,
+                                Colors.blue[300]!,
+                              ],
+                              stops: const [
+                                0.3,
+                                0.9
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter),
                           isVisible: selectedInfo == ExcerciseInfoType.reps,
                           name: 'Reps',
                           dataSource: snapshot.data!.weeklyInfo,

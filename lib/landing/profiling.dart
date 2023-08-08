@@ -7,7 +7,6 @@ import 'package:image_picker/image_picker.dart';
 
 import '../database.dart';
 import '../main.dart';
-import 'layout.dart';
 
 class ProfilingWidget extends StatefulWidget {
   const ProfilingWidget(
@@ -305,26 +304,29 @@ class _DailyStepCounterState extends State<DailyStepCounter> {
 
   HealthFactory? get health => widget.health;
 
-  void test() async {
+  void readSteps() async {
     if (health == null) return;
     var now = DateTime.now();
 
-    // fetch health data from the last 24 hours
-    List<HealthDataPoint> healthData = await health!.getHealthDataFromTypes(
-        now.subtract(const Duration(days: 1)), now, types);
-
     // get the number of steps for today
     var midnight = DateTime(now.year, now.month, now.day);
-    int? tmp = await health!.getTotalStepsInInterval(midnight, now);
+    int? tmp = await health!.getTotalStepsInInterval(
+        midnight.subtract(const Duration(days: 0)), now);
     setState(() {
-      steps = tmp ?? -1;
+      steps = tmp ?? 0;
     });
+  }
+
+  @override
+  void didUpdateWidget(DailyStepCounter oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    readSteps();
   }
 
   @override
   void initState() {
     super.initState();
-    test();
+    readSteps();
   }
 
   @override

@@ -57,6 +57,14 @@ class _StepsSparkLineState extends State<StepsSparkLine> {
       });
       return;
     }
+    // DateTime now = DateTime.now();
+    // DateTime date = DateTime(now.year, now.month, now.day);
+    // List<HealthDataPoint> tmp = await health!.getHealthDataFromTypes(
+    //     date, now, [HealthDataType.ACTIVE_ENERGY_BURNED]);
+    // int calories =
+    //     tmp.map((e) => double.parse(e.value.toString()).ceil()).reduce(
+    //           (value, element) => value + element,
+    //         );
     List<HealthDataPoint> healthData = await health!.getHealthDataFromTypes(
         DateTime.now().subtract(Duration(days: daysOffset)),
         DateTime.now(),
@@ -65,8 +73,8 @@ class _StepsSparkLineState extends State<StepsSparkLine> {
     for (var i = 0; i < (daysOffset); i++) {
       int value = 0;
       DateTime now = DateTime.now();
-      DateTime date = DateTime(now.year, now.month, now.day)
-          .subtract(Duration(days: i + 1));
+      DateTime date = DateTime(now.year, now.month, now.day);
+      date = date.subtract(Duration(days: i + 1));
       healthData
           .where((element) => element.dateFrom.day == date.day)
           .forEach((element) {
@@ -127,6 +135,7 @@ class _StepsSparkLineState extends State<StepsSparkLine> {
                         onTap: () {
                           setState(() {
                             selected = e;
+                            steps = null;
                             readData();
                           });
                         },
@@ -170,10 +179,11 @@ class _StepsSparkLineState extends State<StepsSparkLine> {
                   height: 400,
                   child: SfCartesianChart(
                     primaryXAxis: DateTimeAxis(
+                      interval: selected == DaysOffset.M ? 7 : 1,
                       dateFormat: DateFormat('dd/MM'),
-                      minimum: DateTime.now()
-                          .subtract(Duration(days: daysOffset + 1)),
-                      maximum: DateTime.now(),
+                      minimum:
+                          DateTime.now().subtract(Duration(days: daysOffset)),
+                      maximum: DateTime.now().subtract(const Duration(days: 1)),
                     ),
                     primaryYAxis: NumericAxis(
                       visibleMinimum: 0,
@@ -193,8 +203,23 @@ class _StepsSparkLineState extends State<StepsSparkLine> {
                     tooltipBehavior: TooltipBehavior(
                       enable: true,
                     ),
-                    series: <LineSeries<_HealthDataPoint, DateTime>>[
-                      LineSeries<_HealthDataPoint, DateTime>(
+                    series: <AreaSeries<_HealthDataPoint, DateTime>>[
+                      AreaSeries<_HealthDataPoint, DateTime>(
+                        color: Colors.blue[100]!,
+                        borderDrawMode: BorderDrawMode.excludeBottom,
+                        borderColor: Colors.blue,
+                        borderWidth: 2,
+                        gradient: LinearGradient(
+                            colors: [
+                              Colors.blue[100]!,
+                              Colors.blue[300]!,
+                            ],
+                            stops: const [
+                              0.3,
+                              0.9
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter),
                         isVisible: true,
                         name: 'Steps',
                         dataSource: snapshot.data!,

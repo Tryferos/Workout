@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/excercise.dart' as Excercise_Package;
 import 'package:http/http.dart' as http;
@@ -215,7 +216,8 @@ class _ExcerciseListItemState extends State<ExcerciseListItem> {
       tileColor: const Color.fromARGB(255, 255, 255, 255),
       trailing: GestureDetector(
         onTap: () {
-          Navigator.of(context).push(MaterialPageRoute(
+          Navigator.of(context).push(CupertinoPageRoute(
+              fullscreenDialog: true,
               builder: (context) => Excercise_Package.ExcerciseWidget(
                     excerciseInfo: excerciseInfo,
                     addExcerciseInfo: addExcerciseInfo,

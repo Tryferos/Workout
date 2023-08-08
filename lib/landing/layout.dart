@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/database.dart' as db;
 import 'package:flutter_application_1/landing/charts.dart';
@@ -13,7 +14,8 @@ import '../database.dart';
 import '../index.dart';
 import '../main.dart';
 
-const types = [HealthDataType.STEPS, HealthDataType.WEIGHT];
+const types = [HealthDataType.STEPS, HealthDataType.ACTIVE_ENERGY_BURNED];
+const permissions = [HealthDataAccess.READ, HealthDataAccess.READ];
 
 class LayoutLanding extends StatefulWidget {
   const LayoutLanding({super.key});
@@ -31,15 +33,16 @@ class _LayoutLandingState extends State<LayoutLanding> {
     super.initState();
     setState(() {
       sessionsCurrent = sessions;
+      // health = HealthFactory(useHealthConnectIfAvailable: true);
+      // requestPermissions();
     });
-    health = HealthFactory(useHealthConnectIfAvailable: true);
-    requestPermissions();
   }
 
   void requestPermissions() async {
     await Permission.activityRecognition.request();
     await Permission.location.request();
     await health!.requestAuthorization(types);
+    await health!.requestAuthorization(types, permissions: permissions);
   }
 
   @override
@@ -95,7 +98,8 @@ class _LayoutLandingState extends State<LayoutLanding> {
                   clickHandler: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
+                      CupertinoPageRoute(
+                          fullscreenDialog: true,
                           builder: (context) => const BodyPartSelector()),
                     ).then((session) {
                       if (session == null) return;

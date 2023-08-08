@@ -1,9 +1,12 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/bodyPart.dart';
 import 'package:flutter_application_1/database.dart' as db;
 import 'package:flutter_application_1/excercise.dart';
+
+import 'landing/results.dart';
 
 class Session extends StatefulWidget {
   const Session({super.key, required this.selectedBodyParts});
@@ -201,14 +204,14 @@ class _SessionState extends State<Session> {
       },
     );
     Widget saveButton = TextButton(
-      child: const Text("Save"),
+      child: const Text("finish"),
       onPressed: () {
         db.Session session = db.Session(
             date: DateTime.now().millisecondsSinceEpoch, duration: duration);
         session.excerciseInfo = data;
-        Navigator.of(context).pop();
-        Navigator.of(context).pop();
-        Navigator.of(context).pop(session);
+        Navigator.of(context).push(CupertinoPageRoute(
+            builder: (context) =>
+                PostSessionResults(session: session, bodyParts: bodyPartData)));
       },
     );
     // set up the AlertDialog

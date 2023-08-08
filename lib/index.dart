@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/session.dart';
 import 'package:flutter_application_1/workout.dart';
@@ -83,7 +84,7 @@ class Workout extends StatelessWidget {
         backgroundColor: Colors.blue,
         onPressed: () {
           if (selectedBodyParts.isEmpty) return;
-          Navigator.of(context).push(MaterialPageRoute(
+          Navigator.of(context).push(CupertinoPageRoute(
               builder: (context) =>
                   Session(selectedBodyParts: selectedBodyParts)));
         },
