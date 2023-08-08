@@ -9,7 +9,9 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import '../bodyPart.dart';
 
 class WorkoutsChart extends StatefulWidget {
-  const WorkoutsChart({super.key});
+  const WorkoutsChart({super.key, required this.refresh});
+
+  final bool refresh;
 
   @override
   State<WorkoutsChart> createState() => _WorkoutsChartState();
@@ -20,6 +22,12 @@ class _WorkoutsChartState extends State<WorkoutsChart> {
   @override
   void initState() {
     super.initState();
+    updateList();
+  }
+
+  @override
+  void didUpdateWidget(WorkoutsChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
     updateList();
   }
 
@@ -75,6 +83,7 @@ class _WorkoutsChartState extends State<WorkoutsChart> {
                 primaryYAxis: NumericAxis(
                   minimum: 0,
                   maximum: 30,
+                  visibleMaximum: 20,
                   interval: 5,
                 ),
                 tooltipBehavior: TooltipBehavior(enable: true),

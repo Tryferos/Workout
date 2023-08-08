@@ -93,12 +93,14 @@ class _ScheduleState extends State<Schedule> {
         padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
         decoration: BoxDecoration(
           boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.25),
-              spreadRadius: 1,
-              blurRadius: 2,
-              offset: const Offset(0, 3), // changes position of shadow
-            ),
+            !isUpcoming
+                ? BoxShadow(
+                    color: Colors.grey.withOpacity(0.25),
+                    spreadRadius: 1,
+                    blurRadius: 2,
+                    offset: const Offset(0, 3), // changes position of shadow
+                  )
+                : const BoxShadow(color: Colors.transparent),
           ],
           border:
               Border.all(color: Colors.grey[300]!, width: isUpcoming ? 1.5 : 0),

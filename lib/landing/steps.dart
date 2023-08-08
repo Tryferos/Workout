@@ -57,14 +57,6 @@ class _StepsSparkLineState extends State<StepsSparkLine> {
       });
       return;
     }
-    // DateTime now = DateTime.now();
-    // DateTime date = DateTime(now.year, now.month, now.day);
-    // List<HealthDataPoint> tmp = await health!.getHealthDataFromTypes(
-    //     date, now, [HealthDataType.ACTIVE_ENERGY_BURNED]);
-    // int calories =
-    //     tmp.map((e) => double.parse(e.value.toString()).ceil()).reduce(
-    //           (value, element) => value + element,
-    //         );
     List<HealthDataPoint> healthData = await health!.getHealthDataFromTypes(
         DateTime.now().subtract(Duration(days: daysOffset)),
         DateTime.now(),

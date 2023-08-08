@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/database.dart' as db;
+import 'package:flutter_application_1/landing/calories.dart';
 import 'package:flutter_application_1/landing/charts.dart';
 import 'package:flutter_application_1/landing/goals.dart';
 import 'package:flutter_application_1/landing/profiling.dart';
@@ -33,8 +34,8 @@ class _LayoutLandingState extends State<LayoutLanding> {
     super.initState();
     setState(() {
       sessionsCurrent = sessions;
-      // health = HealthFactory(useHealthConnectIfAvailable: true);
-      // requestPermissions();
+      health = HealthFactory(useHealthConnectIfAvailable: true);
+      requestPermissions();
     });
   }
 
@@ -133,7 +134,9 @@ class _LayoutLandingState extends State<LayoutLanding> {
               const SizedBox(
                 height: 40,
               ),
-              const WorkoutsChart(),
+              StepsSparkLine(
+                health: health,
+              ),
               const SizedBox(
                 height: 40,
               ),
@@ -141,9 +144,8 @@ class _LayoutLandingState extends State<LayoutLanding> {
               const SizedBox(
                 height: 40,
               ),
-              StepsSparkLine(
-                health: health,
-              ),
+              CaloriesChart(health: health),
+              WorkoutsChart(refresh: refresh),
               const SizedBox(
                 height: 40,
               ),
