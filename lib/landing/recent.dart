@@ -244,7 +244,7 @@ class _RecentWorkoutsState extends State<RecentWorkouts> {
                       fontWeight: FontWeight.w700,
                       fontSize: 14,
                       color: Color.fromARGB(255, 134, 131, 131)),
-                  '${widget.sessionsCurrent[i].excerciseInfo!.map((el) => el.sets.length).reduce((value, element) => value + element)} Sets, ${(widget.sessionsCurrent[i].duration / 60).round()}m | ${Session.getAgo(widget.sessionsCurrent[i].date)}'),
+                  '${widget.sessionsCurrent[i].excerciseInfo?.map((el) => el.sets.length).reduce((value, element) => value + element)} Sets, ${(widget.sessionsCurrent[i].duration / 60).round()}m | ${Session.getAgo(widget.sessionsCurrent[i].date)}'),
             ),
           )
       ],

@@ -26,68 +26,71 @@ class _PostSessionResultsState extends State<PostSessionResults> {
       initialIndex: index,
       length: 2,
       child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          title: const Text('Workout Summary',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w500)),
-          centerTitle: true,
-          backgroundColor: Colors.blue,
-          toolbarHeight: 105,
-          bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(15),
-              child: TabBar(
-                onTap: (index) {
-                  setState(() {
-                    this.index = index;
-                  });
-                },
-                tabs: const [
-                  Tab(
-                    text: 'Latest Workout',
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            title: const Text('Workout Summary',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w500)),
+            centerTitle: true,
+            backgroundColor: Colors.blue,
+            toolbarHeight: 105,
+            bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(15),
+                child: TabBar(
+                  onTap: (index) {
+                    setState(() {
+                      this.index = index;
+                    });
+                  },
+                  tabs: const [
+                    Tab(
+                      text: 'Latest Workout',
+                    ),
+                    Tab(
+                      text: 'Overall Performance',
+                    ),
+                  ],
+                  indicatorColor: Colors.white,
+                  dividerColor: Colors.transparent,
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.white.withOpacity(0.7),
+                  indicator: UnderlineTabIndicator(
+                    borderSide:
+                        const BorderSide(color: Colors.white, width: 2.25),
+                    insets: EdgeInsets.symmetric(
+                        horizontal: MediaQuery.of(context).size.width / 4 - 10,
+                        vertical: 0),
                   ),
-                  Tab(
-                    text: 'Overall Performance',
-                  ),
-                ],
-                indicatorColor: Colors.white,
-                dividerColor: Colors.transparent,
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.white.withOpacity(0.7),
-                indicator: UnderlineTabIndicator(
-                  borderSide:
-                      const BorderSide(color: Colors.white, width: 2.25),
-                  insets: EdgeInsets.symmetric(
-                      horizontal: MediaQuery.of(context).size.width / 4 - 10,
-                      vertical: 0),
-                ),
-              )),
-          leading: BackButton(
-            color: Colors.white,
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-              Navigator.of(context).pop(session);
-            },
+                )),
+            leading: BackButton(
+              color: Colors.white,
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+                Navigator.of(context).pop(session);
+              },
+            ),
           ),
-        ),
-        body: index == 0
-            ? LatestWorkout(
-                session: session,
-                bodyParts: widget.bodyParts,
-              )
-            : const Placeholder(),
-      ),
+          body: LatestWorkout(
+            session: session,
+            bodyParts: widget.bodyParts,
+            overall: index == 1,
+          )),
     );
   }
 }
 
 class LatestWorkout extends StatefulWidget {
   const LatestWorkout(
-      {super.key, required this.session, required this.bodyParts});
+      {super.key,
+      required this.session,
+      required this.bodyParts,
+      required this.overall});
+
+  final bool overall;
 
   final List<BodyPartData> bodyParts;
 
@@ -107,6 +110,13 @@ class _LatestWorkoutState extends State<LatestWorkout> {
     readData();
   }
 
+  @override
+  void didUpdateWidget(LatestWorkout oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.overall == widget.overall) return;
+    readData();
+  }
+
   void readData() {
     setState(() {
       offsetPercentage.clear();
@@ -115,12 +125,23 @@ class _LatestWorkoutState extends State<LatestWorkout> {
     sessions.sort((a, b) => a.date.compareTo(b.date));
     for (var e in session.excerciseInfo!) {
       ExcerciseInfo? latest;
+      int length = 0;
+      double lEffort = 0;
       for (var element in sessions) {
         element.excerciseInfo?.forEach((element) {
           if (element.excercise.name == e.excercise.name) {
             latest = element;
+            if (widget.overall) {
+              length++;
+              for (var s in element.sets) {
+                lEffort += (s.reps * 0.75) * s.weight;
+              }
+            }
           }
         });
+      }
+      if (widget.overall) {
+        lEffort /= length;
       }
       if (latest == null) continue;
       double offsetPercentage = 0;
@@ -128,9 +149,10 @@ class _LatestWorkoutState extends State<LatestWorkout> {
       for (var s in e.sets) {
         cEffort += (s.reps * 0.75) * s.weight;
       }
-      double lEffort = 0;
-      for (var s in latest!.sets) {
-        lEffort += (s.reps * 0.75) * s.weight;
+      if (!widget.overall) {
+        for (var s in latest!.sets) {
+          lEffort += (s.reps * 0.75) * s.weight;
+        }
       }
       offsetPercentage = (cEffort - lEffort) / lEffort;
       setState(() {
@@ -138,8 +160,9 @@ class _LatestWorkoutState extends State<LatestWorkout> {
       });
     }
     setState(() {
-      overallPerformance =
-          offsetPercentage.reduce((value, element) => value + element);
+      overallPerformance = offsetPercentage.isEmpty
+          ? 0
+          : offsetPercentage.reduce((value, element) => value + element);
     });
   }
 
@@ -168,22 +191,26 @@ class _LatestWorkoutState extends State<LatestWorkout> {
           Text.rich(
               textAlign: TextAlign.center,
               TextSpan(
-                text:
-                    'Your performance has ${overallPerformance >= 0 ? 'increased' : 'decreased'} by ',
+                text: overallPerformance == 0
+                    ? 'Your performance has not changed'
+                    : 'Your performance has ${overallPerformance > 0 ? 'increased' : 'decreased'} by ',
                 style: const TextStyle(
                     color: Colors.black,
                     fontSize: 22,
                     fontWeight: FontWeight.w500),
                 children: [
-                  TextSpan(
-                    text: '${overallPerformance.toStringAsFixed(1)}%',
-                    style: TextStyle(
-                        color: overallPerformance >= 0
-                            ? Colors.green[500]
-                            : Colors.red[500],
-                        fontSize: 22,
-                        fontWeight: FontWeight.w500),
-                  ),
+                  overallPerformance != 0
+                      ? TextSpan(
+                          text:
+                              '${overallPerformance.abs().toStringAsFixed(1)}%',
+                          style: TextStyle(
+                              color: overallPerformance >= 0
+                                  ? Colors.green[500]
+                                  : Colors.red[500],
+                              fontSize: 22,
+                              fontWeight: FontWeight.w500),
+                        )
+                      : const TextSpan(),
                 ],
               ),
               style: const TextStyle(
@@ -191,17 +218,15 @@ class _LatestWorkoutState extends State<LatestWorkout> {
                   fontSize: 22,
                   fontWeight: FontWeight.w500)),
           const SizedBox(
-            height: 5,
+            height: 0,
           ),
           InkWell(
-            onTap: () {
-              readData();
-            },
+            onTap: () => readData(),
             child: Icon(
-              overallPerformance > 0 ? Icons.auto_graph : Icons.show_chart,
+              overallPerformance >= 0 ? Icons.auto_graph : Icons.show_chart,
               color:
-                  overallPerformance > 0 ? Colors.green[500] : Colors.red[500],
-              size: 80,
+                  overallPerformance >= 0 ? Colors.green[500] : Colors.red[500],
+              size: overallPerformance != 0 ? 80 : 0,
               shadows: [
                 Shadow(
                   blurRadius: 10.0,
@@ -212,7 +237,7 @@ class _LatestWorkoutState extends State<LatestWorkout> {
             ),
           ),
           const SizedBox(
-            height: 10,
+            height: 5,
           ),
           Text(widget.bodyParts.map((item) => item.bodyPart).join(' - '),
               style: const TextStyle(

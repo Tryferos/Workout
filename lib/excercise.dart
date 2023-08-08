@@ -198,7 +198,7 @@ class _ExcerciseInputsState extends State<ExcerciseInputs> {
   List<Set> sets = [];
   int numberOfSets = 4;
   double? numberOfWeight;
-  int numberOfReps = 12;
+  int numberOfReps = 10;
   bool selectEachRep = false;
   bool selectEachWeight = false;
   String get category => widget.category;
