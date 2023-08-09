@@ -13,13 +13,46 @@ import '../main.dart';
 class AllGoals extends StatefulWidget {
   const AllGoals({super.key, required this.refresh});
 
-  final bool refresh;
+  final VoidCallback refresh;
 
   @override
   State<AllGoals> createState() => _AllGoalsState();
 }
 
 class _AllGoalsState extends State<AllGoals> {
+  bool refersh = false;
+  Future<List<Goal>>? goals;
+  Future<List<Goal>>? cGoals;
+  Future<List<Goal>>? fGoals;
+  @override
+  void initState() {
+    super.initState();
+    readGoals();
+  }
+
+  void refresh() {
+    setState(() {
+      refersh = !refersh;
+      readGoals();
+      widget.refresh();
+    });
+  }
+
+  void readGoals() {
+    setState(() {
+      goals = Goal.getGoals(true);
+      cGoals = Goal.getCompletedGoals();
+      fGoals = Goal.getFailedGoals();
+    });
+  }
+
+  @override
+  void didUpdateWidget(AllGoals oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    print('update');
+    readGoals();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,7 +83,7 @@ class _AllGoalsState extends State<AllGoals> {
                     height: 10,
                   ),
                   FutureBuilder<List<Goal>>(
-                      future: Goal.getGoals(true),
+                      future: goals,
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           if (snapshot.data!.isEmpty) {
@@ -64,8 +97,9 @@ class _AllGoalsState extends State<AllGoals> {
                             scrollDirection: Axis.vertical,
                             itemCount: snapshot.data!.length,
                             shrinkWrap: true,
-                            itemBuilder: (context, index) =>
-                                snapshot.data![index].getGoalCard(context),
+                            itemBuilder: (context, index) => snapshot
+                                .data![index]
+                                .getGoalCard(context, refresh),
                             separatorBuilder: (context, index) =>
                                 const SizedBox(
                               height: 10,
@@ -94,7 +128,7 @@ class _AllGoalsState extends State<AllGoals> {
                     height: 10,
                   ),
                   FutureBuilder<List<Goal>>(
-                      future: Goal.getCompletedGoals(),
+                      future: cGoals,
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           if (snapshot.data!.isEmpty) {
@@ -108,8 +142,9 @@ class _AllGoalsState extends State<AllGoals> {
                             scrollDirection: Axis.vertical,
                             itemCount: snapshot.data!.length,
                             shrinkWrap: true,
-                            itemBuilder: (context, index) =>
-                                snapshot.data![index].getGoalCard(context),
+                            itemBuilder: (context, index) => snapshot
+                                .data![index]
+                                .getGoalCard(context, refresh),
                             separatorBuilder: (context, index) =>
                                 const SizedBox(
                               height: 10,
@@ -138,7 +173,7 @@ class _AllGoalsState extends State<AllGoals> {
                     height: 10,
                   ),
                   FutureBuilder<List<Goal>>(
-                      future: Goal.getFailedGoals(),
+                      future: fGoals,
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           if (snapshot.data!.isEmpty) {
@@ -152,8 +187,9 @@ class _AllGoalsState extends State<AllGoals> {
                             scrollDirection: Axis.vertical,
                             itemCount: snapshot.data!.length,
                             shrinkWrap: true,
-                            itemBuilder: (context, index) =>
-                                snapshot.data![index].getGoalCard(context),
+                            itemBuilder: (context, index) => snapshot
+                                .data![index]
+                                .getGoalCard(context, refresh),
                             separatorBuilder: (context, index) =>
                                 const SizedBox(
                               height: 10,
@@ -176,7 +212,7 @@ class _AllGoalsState extends State<AllGoals> {
 class WorkoutGoals extends StatefulWidget {
   const WorkoutGoals({super.key, required this.refresh});
 
-  final bool refresh;
+  final VoidCallback refresh;
 
   @override
   State<WorkoutGoals> createState() => _WorkoutGoalsState();
@@ -253,8 +289,8 @@ class _WorkoutGoalsState extends State<WorkoutGoals> {
                 return ListView.separated(
                   itemCount: snapshot.data!.length,
                   shrinkWrap: true,
-                  itemBuilder: (context, index) =>
-                      snapshot.data![index].getGoalCard(context),
+                  itemBuilder: (context, index) => snapshot.data![index]
+                      .getGoalCard(context, widget.refresh),
                   separatorBuilder: (context, index) => const SizedBox(
                     height: 10,
                   ),
@@ -271,7 +307,9 @@ class _WorkoutGoalsState extends State<WorkoutGoals> {
 }
 
 class GoalCreation extends StatefulWidget {
-  const GoalCreation({super.key});
+  const GoalCreation({super.key, required this.refresh});
+
+  final VoidCallback refresh;
 
   @override
   State<GoalCreation> createState() => _GoalCreationState();
@@ -285,8 +323,8 @@ class _GoalCreationState extends State<GoalCreation> {
           title: const Text('Create a new goal'),
           centerTitle: true,
         ),
-        body: const Center(
-          child: GoalStepperWidget(),
+        body: Center(
+          child: GoalStepperWidget(refresh: widget.refresh),
         ));
   }
 }
@@ -301,9 +339,9 @@ abstract class Goal {
   bool isCompleted();
   double getProgress();
   void writeGoal();
-  Widget getGoalCard(BuildContext context);
+  Widget getGoalCard(BuildContext context, VoidCallback refresh);
 
-  void removeGoal(BuildContext context) {
+  void removeGoal(BuildContext context, VoidCallback refresh) {
     // set up the buttons
     Widget cancelButton = TextButton(
       child: const Text("Cancel"),
@@ -319,8 +357,8 @@ abstract class Goal {
         Navigator.of(context).pop();
         final db = await database;
         if (db == null) return;
-
         db.delete('Goals', where: 'date = ?', whereArgs: [date]);
+        refresh();
       },
     );
     AlertDialog alert = AlertDialog(
@@ -455,10 +493,10 @@ class WorkoutGoal extends Goal {
   }
 
   @override
-  Widget getGoalCard(BuildContext context) {
+  Widget getGoalCard(BuildContext context, VoidCallback refresh) {
     return ListTile(
       onLongPress: () {
-        super.removeGoal(context);
+        super.removeGoal(context, refresh);
       },
       shape: const RoundedRectangleBorder(
           side: BorderSide(color: Colors.grey, width: 0.75),
@@ -577,10 +615,11 @@ class SingleExcerciseGoal extends Goal {
   ExcerciseGoalItem excercise;
 
   @override
-  Widget getGoalCard(BuildContext context) {
+  Widget getGoalCard(BuildContext context, VoidCallback refresh) {
     return ListTile(
       onLongPress: () {
-        super.removeGoal(context);
+        super.removeGoal(context, refresh);
+        refresh();
       },
       shape: const RoundedRectangleBorder(
           side: BorderSide(color: Colors.grey, width: 0.75),
@@ -709,7 +748,7 @@ class MultiExcerciseGoal extends Goal {
   List<ExcerciseGoalItem> excercises;
 
   @override
-  Widget getGoalCard(BuildContext context) {
+  Widget getGoalCard(BuildContext context, VoidCallback refresh) {
     return const Text('');
   }
 

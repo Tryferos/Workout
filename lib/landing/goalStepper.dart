@@ -8,7 +8,9 @@ import '../excercise.dart';
 import 'goals.dart';
 
 class GoalStepperWidget extends StatefulWidget {
-  const GoalStepperWidget({super.key});
+  const GoalStepperWidget({super.key, required this.refresh});
+
+  final VoidCallback refresh;
 
   @override
   State<GoalStepperWidget> createState() => _GoalStepperWidgetState();
@@ -73,6 +75,7 @@ class _GoalStepperWidgetState extends State<GoalStepperWidget> {
           excercise: item, title: title, date: DateTime.now());
       goal.writeGoal();
     }
+    widget.refresh();
     Navigator.pop(context);
   }
 

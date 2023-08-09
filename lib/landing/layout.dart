@@ -118,7 +118,13 @@ class _LayoutLandingState extends State<LayoutLanding> {
               const SizedBox(
                 height: 20,
               ),
-              WorkoutGoals(refresh: refresh),
+              WorkoutGoals(
+                refresh: () {
+                  setState(() {
+                    refresh = !refresh;
+                  });
+                },
+              ),
               const SizedBox(
                 height: 20,
               ),
@@ -128,7 +134,13 @@ class _LayoutLandingState extends State<LayoutLanding> {
                     Navigator.push(
                       context,
                       CupertinoPageRoute(
-                          builder: (context) => const GoalCreation()),
+                          builder: (context) => GoalCreation(
+                                refresh: () {
+                                  setState(() {
+                                    refresh = !refresh;
+                                  });
+                                },
+                              )),
                     );
                   }),
               const SizedBox(
