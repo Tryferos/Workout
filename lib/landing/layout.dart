@@ -16,7 +16,7 @@ import '../index.dart';
 import '../main.dart';
 
 const types = [HealthDataType.STEPS, HealthDataType.ACTIVE_ENERGY_BURNED];
-const permissions = [HealthDataAccess.READ, HealthDataAccess.READ];
+const permissions = [HealthDataAccess.READ_WRITE, HealthDataAccess.READ_WRITE];
 
 class LayoutLanding extends StatefulWidget {
   const LayoutLanding({super.key});
@@ -35,7 +35,7 @@ class _LayoutLandingState extends State<LayoutLanding> {
     setState(() {
       sessionsCurrent = sessions;
       health = HealthFactory(useHealthConnectIfAvailable: true);
-      requestPermissions();
+      // requestPermissions();
     });
   }
 
@@ -127,7 +127,7 @@ class _LayoutLandingState extends State<LayoutLanding> {
                   clickHandler: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
+                      CupertinoPageRoute(
                           builder: (context) => const GoalCreation()),
                     );
                   }),

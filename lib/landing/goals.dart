@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:circular_chart_flutter/circular_chart_flutter.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/landing/goalStepper.dart';
 
@@ -226,7 +227,8 @@ class _WorkoutGoalsState extends State<WorkoutGoals> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
+                    CupertinoPageRoute(
+                        fullscreenDialog: true,
                         builder: (context) => AllGoals(
                               refresh: widget.refresh,
                             )),
@@ -364,7 +366,7 @@ abstract class Goal {
     for (var g in goals) {
       List<ExcerciseGoalItem> excercises = [];
       List<Map<String, dynamic>> excerciseGoals = await db
-          .query('ExcerciseGoal', where: 'id = ?', whereArgs: [g['id']]);
+          .query('ExcerciseGoal', where: 'goalId = ?', whereArgs: [g['id']]);
       if (excerciseGoals.isEmpty) {
         List<Map<String, dynamic>> workoutGoals = await db
             .query('WorkoutGoal', where: 'goalId = ?', whereArgs: [g['id']]);

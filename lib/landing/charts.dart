@@ -378,6 +378,14 @@ class SearchExcercise extends StatefulWidget {
 
 class _SearchExcerciseState extends State<SearchExcercise> {
   Future<List<Excercise>>? list;
+
+  @override
+  void setState(VoidCallback fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
   @override
   void initState() {
     super.initState();

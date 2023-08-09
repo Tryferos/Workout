@@ -30,6 +30,7 @@ class _CaloriesChartState extends State<CaloriesChart> {
       DateTime end = DateTime(date.year, date.month, date.day, 23, 59, 59);
       List<HealthDataPoint> tmp = await health!.getHealthDataFromTypes(
           date, i == 0 ? now : end, [HealthDataType.ACTIVE_ENERGY_BURNED]);
+      if (tmp.isEmpty) continue;
       int calories =
           tmp.map((e) => double.parse(e.value.toString()).ceil()).reduce(
                 (value, element) => value + element,

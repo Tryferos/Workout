@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/main.dart';
 
@@ -195,7 +196,8 @@ class _RecentWorkoutsState extends State<RecentWorkouts> {
               onTap: () {
                 Navigator.push(
                     context,
-                    MaterialPageRoute(
+                    CupertinoPageRoute(
+                      fullscreenDialog: true,
                       builder: (context) => const AllWorkouts(),
                     ));
               },

@@ -249,14 +249,14 @@ class _AddExcerciseInfoState extends State<AddExcerciseInfo> {
   late WeightSliderController _weightController;
   late WeightSliderController _repsController;
   double _weight = 10;
-  double _reps = 4;
+  double _reps = 10;
   @override
   void initState() {
     super.initState();
     _weightController = WeightSliderController(
         initialWeight: _weight, minWeight: 0, interval: 1);
-    _repsController = WeightSliderController(
-        initialWeight: _weight, minWeight: 1, interval: 1);
+    _repsController =
+        WeightSliderController(initialWeight: _reps, minWeight: 1, interval: 1);
   }
 
   @override
@@ -297,7 +297,7 @@ class _AddExcerciseInfoState extends State<AddExcerciseInfo> {
                   setState(() {
                     _weight = value;
                     widget.changeExcerciseInfo(Excercise_Package.Set(
-                        reps: _reps.round(), weight: _weight));
+                        reps: _reps.round(), weight: value));
                   });
                 },
                 maxWeight: 300,
@@ -341,6 +341,8 @@ class _AddExcerciseInfoState extends State<AddExcerciseInfo> {
                 onChanged: (double value) {
                   setState(() {
                     _reps = value;
+                    widget.changeExcerciseInfo(Excercise_Package.Set(
+                        reps: value.round(), weight: _weight));
                   });
                 },
                 maxWeight: 30,

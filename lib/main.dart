@@ -5,6 +5,13 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 Future<Database>? database;
+//build/app/outputs/flutter-apk/app-release.apk- signer
+//build/app/outputs/apk/release/app-release.apk - signer2
+//build\app\outputs\flutter-apk\app-release.apk - install
+//68:8D:7E:92:43:74:EC:88:E0:CE:05:77:22:93:4C:9D:74:54:96:A7 - signer2
+//68:8D:7E:92:43:74:EC:88:E0:CE:05:77:22:93:4C:9D:74:54:96:A7 signer1
+//68:8D:7E:92:43:74:EC:88:E0:CE:05:77:22:93:4C:9D:74:54:96:A7
+
 List<Session> sessions = [];
 
 void main() async {
