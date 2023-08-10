@@ -115,14 +115,14 @@ class _SessionState extends State<Session> {
                 ),
               ],
             ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.stop, color: Colors.white),
-                onPressed: () {
-                  // Navigator.of(context).pop();
-                  showAlertDialog(context, excerciseInfo, duration.inSeconds);
-                },
-              ),
+            actions: const [
+              // IconButton(
+              //   icon: const Icon(Icons.stop, color: Colors.white),
+              //   onPressed: () {
+              //     // Navigator.of(context).pop();
+              //     showAlertDialog(context, excerciseInfo, duration.inSeconds);
+              //   },
+              // ),
             ],
             bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(45),
@@ -173,6 +173,7 @@ class _SessionState extends State<Session> {
             children: <Widget>[
               for (var bodyPart in selectedBodyParts)
                 BodyPart(
+                    bodyPartDataList: bodyPartData,
                     title: bodyPart,
                     duration: duration,
                     excerciseInfo: excerciseInfo,

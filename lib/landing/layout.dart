@@ -33,9 +33,9 @@ class _LayoutLandingState extends State<LayoutLanding> {
   void initState() {
     super.initState();
     setState(() {
+      // requestPermissions();
       sessionsCurrent = sessions;
       health = HealthFactory(useHealthConnectIfAvailable: true);
-      // requestPermissions();
     });
   }
 

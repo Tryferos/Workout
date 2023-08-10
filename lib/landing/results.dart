@@ -69,7 +69,6 @@ class _PostSessionResultsState extends State<PostSessionResults> {
               onPressed: () {
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
-                Navigator.of(context).pop();
                 Navigator.of(context).pop(session);
               },
             ),

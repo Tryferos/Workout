@@ -47,6 +47,7 @@ dependencies:
   pedometer: ^4.0.1
   health: ^7.0.1
   permission_handler: ^10.4.3
+  action_slider: ^0.7.0
 
 
 dev_dependencies:
