@@ -175,7 +175,7 @@ class _StepsSparkLineState extends State<StepsSparkLine> {
                       dateFormat: DateFormat('dd/MM'),
                       minimum:
                           DateTime.now().subtract(Duration(days: daysOffset)),
-                      maximum: DateTime.now().subtract(const Duration(days: 1)),
+                      maximum: DateTime.now().subtract(const Duration(days: 0)),
                     ),
                     primaryYAxis: NumericAxis(
                       visibleMinimum: 0,

@@ -158,6 +158,16 @@ class _ProfilingWidgetState extends State<ProfilingWidget> {
           child: Stack(
             alignment: Alignment.center,
             children: [
+              Positioned(
+                  right: 0,
+                  top: -10,
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.more_vert_outlined,
+                      color: Colors.black,
+                    ),
+                    onPressed: () {},
+                  )),
               Column(
                 children: [
                   Stack(
@@ -214,7 +224,7 @@ class _ProfilingWidgetState extends State<ProfilingWidget> {
                   : Container(),
               (workoutsNumber >= 100)
                   ? Positioned(
-                      top: 0,
+                      top: 74,
                       right: 0,
                       child: Tooltip(
                         message: 'This certification is given to users who\n'

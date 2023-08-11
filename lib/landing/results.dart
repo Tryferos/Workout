@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/bodyPart.dart';
+import 'package:flutter_application_1/landing/layout.dart';
 
 import '../database.dart';
 import '../excercise.dart';
@@ -7,9 +8,14 @@ import '../main.dart';
 
 class PostSessionResults extends StatefulWidget {
   const PostSessionResults(
-      {super.key, required this.session, required this.bodyParts});
+      {super.key,
+      required this.session,
+      required this.bodyParts,
+      required this.onGoingSession});
 
   final List<BodyPartData> bodyParts;
+
+  final bool onGoingSession;
 
   final Session session;
 
@@ -67,9 +73,13 @@ class _PostSessionResultsState extends State<PostSessionResults> {
             leading: BackButton(
               color: Colors.white,
               onPressed: () {
+                if (!widget.onGoingSession) {
+                  Navigator.of(context).pop();
+                }
                 Navigator.of(context).pop();
-                Navigator.of(context).pop();
-                Navigator.of(context).pop(session);
+                SessionReturned r = SessionReturned(
+                    session: session, finished: true, onGoingSession: null);
+                Navigator.of(context).pop(r);
               },
             ),
           ),

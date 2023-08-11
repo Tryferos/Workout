@@ -120,6 +120,7 @@ class BodyPart extends StatefulWidget {
   final BodyPartData bodyPartData;
   final Duration duration;
   final List<BodyPartData> bodyPartDataList;
+  final bool onGoingSession;
   const BodyPart(
       {super.key,
       required this.title,
@@ -128,6 +129,7 @@ class BodyPart extends StatefulWidget {
       required this.addBodyPartData,
       required this.bodyPartData,
       required this.bodyPartDataList,
+      required this.onGoingSession,
       required this.duration});
 
   @override
@@ -151,59 +153,72 @@ class _BodyPartState extends State<BodyPart> {
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 return Expanded(
-                  child: ListView.builder(itemBuilder: (context, index) {
-                    if (index >= snapshot.data!.excercises.length) return null;
-                    return ExcerciseListItem(
-                        addExcerciseInfo: addExcerciseInfo,
-                        excerciseInfo: excerciseInfo.firstWhere(
-                            (element) =>
-                                element.excercise.getName ==
-                                snapshot.data!.getExcercises[index].getName,
-                            orElse: () => ExcerciseInfo(
-                                excercise: snapshot.data!.getExcercises[index],
-                                sets: [])),
-                        duration: duration,
-                        excercise: snapshot.data!.getExcercises[index]);
-                  }),
+                  child: ListView.builder(
+                      cacheExtent: 2000,
+                      itemBuilder: (context, index) {
+                        if (index >= snapshot.data!.excercises.length) {
+                          return null;
+                        }
+                        return ExcerciseListItem(
+                            addExcerciseInfo: addExcerciseInfo,
+                            excerciseInfo: excerciseInfo.firstWhere(
+                                (element) =>
+                                    element.excercise.getName ==
+                                    snapshot.data!.getExcercises[index].getName,
+                                orElse: () => ExcerciseInfo(
+                                    excercise:
+                                        snapshot.data!.getExcercises[index],
+                                    sets: [])),
+                            duration: duration,
+                            excercise: snapshot.data!.getExcercises[index]);
+                      }),
                 );
               }
-              return const Center(child: CircularProgressIndicator());
+              return const Center(
+                  child: CircularProgressIndicator(
+                color: Colors.white,
+              ));
             },
             future: futureBodyPartData),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-          child: ActionSlider.standard(
-            sliderBehavior: SliderBehavior.stretch,
-            width: 300.0,
-            backgroundColor: Colors.white,
-            toggleColor: Colors.blue,
-            icon: const Icon(Icons.arrow_forward_ios, color: Colors.white),
-            loadingIcon: const CircularProgressIndicator(
-                color: Colors.white, strokeWidth: 2),
-            successIcon: const Icon(Icons.check, color: Colors.white),
-            failureIcon: const Icon(Icons.close, color: Colors.white),
-            action: (controller) async {
-              controller.loading(); //starts loading animation
-              await Future.delayed(const Duration(seconds: 3));
-              if (excerciseInfo.isEmpty) {
-                controller.failure();
-                await Future.delayed(const Duration(seconds: 2));
-                controller.reset();
-                return;
-              }
-              controller.success();
-              db.Session session = db.Session(
-                  date: DateTime.now().millisecondsSinceEpoch,
-                  duration: widget.duration.inSeconds);
-              session.excerciseInfo = excerciseInfo;
-              await Future.delayed(const Duration(seconds: 1));
-              Navigator.of(context).push(CupertinoPageRoute(
-                  builder: (context) => PostSessionResults(
-                      session: session, bodyParts: widget.bodyPartDataList)));
-            },
-            child: const Text(
-              'Finish your workout',
-              style: TextStyle(fontWeight: FontWeight.w500),
+        Container(
+          color: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+            child: ActionSlider.standard(
+              sliderBehavior: SliderBehavior.stretch,
+              width: 300.0,
+              backgroundColor: Colors.white,
+              toggleColor: Colors.blue,
+              icon: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+              loadingIcon: const CircularProgressIndicator(
+                  color: Colors.white, strokeWidth: 2),
+              successIcon: const Icon(Icons.check, color: Colors.white),
+              failureIcon: const Icon(Icons.close, color: Colors.white),
+              action: (controller) async {
+                controller.loading(); //starts loading animation
+                await Future.delayed(const Duration(seconds: 3));
+                if (excerciseInfo.isEmpty) {
+                  controller.failure();
+                  await Future.delayed(const Duration(seconds: 2));
+                  controller.reset();
+                  return;
+                }
+                controller.success();
+                db.Session session = db.Session(
+                    date: DateTime.now().millisecondsSinceEpoch,
+                    duration: widget.duration.inSeconds);
+                session.excerciseInfo = excerciseInfo;
+                await Future.delayed(const Duration(seconds: 1));
+                Navigator.of(context).push(CupertinoPageRoute(
+                    builder: (context) => PostSessionResults(
+                        session: session,
+                        bodyParts: widget.bodyPartDataList,
+                        onGoingSession: widget.onGoingSession)));
+              },
+              child: const Text(
+                'Finish your workout',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
             ),
           ),
         ),

@@ -85,8 +85,8 @@ class Workout extends StatelessWidget {
         onPressed: () {
           if (selectedBodyParts.isEmpty) return;
           Navigator.of(context).push(CupertinoPageRoute(
-              builder: (context) =>
-                  Session(selectedBodyParts: selectedBodyParts)));
+              builder: (context) => Session(
+                  selectedBodyParts: selectedBodyParts, onGoingSession: null)));
         },
         child: const Icon(
           Icons.start,

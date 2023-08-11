@@ -6,12 +6,18 @@ import 'package:flutter_application_1/bodyPart.dart';
 import 'package:flutter_application_1/database.dart' as db;
 import 'package:flutter_application_1/excercise.dart';
 
+import 'landing/layout.dart';
 import 'landing/results.dart';
 
 class Session extends StatefulWidget {
-  const Session({super.key, required this.selectedBodyParts});
+  const Session(
+      {super.key,
+      required this.selectedBodyParts,
+      required this.onGoingSession});
 
   final List<String> selectedBodyParts;
+
+  final OnGoingSession? onGoingSession;
 
   @override
   State<Session> createState() => _SessionState();
@@ -20,7 +26,9 @@ class Session extends StatefulWidget {
 String strDigits(int n) => n.toString().padLeft(2, '0');
 
 class _SessionState extends State<Session> {
-  List<String> get selectedBodyParts => widget.selectedBodyParts;
+  List<String> get selectedBodyParts => widget.onGoingSession == null
+      ? widget.selectedBodyParts
+      : widget.onGoingSession!.selectedBodyParts;
   List<BodyPartData> bodyPartData = [];
   List<ExcerciseInfo> excerciseInfo = [];
   Timer? timer;
@@ -30,8 +38,21 @@ class _SessionState extends State<Session> {
   @override
   void initState() {
     super.initState();
+    if (widget.onGoingSession != null) {
+      startTime = widget.onGoingSession!.startTime;
+      duration = widget.onGoingSession!.duration;
+      setState(() {
+        excerciseInfo = widget.onGoingSession!.excerciseInfo;
+      });
+      setUpTimer();
+      return;
+    }
     startTime = DateTime.now();
     duration = const Duration(seconds: 0);
+    setUpTimer();
+  }
+
+  void setUpTimer() {
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         duration = DateTime.now().difference(startTime!);
@@ -164,7 +185,23 @@ class _SessionState extends State<Session> {
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () {
-                Navigator.of(context).pop();
+                if (widget.onGoingSession == null) {
+                  Navigator.of(context).pop();
+                }
+                if (selectedBodyParts.isEmpty || excerciseInfo.isEmpty) {
+                  Navigator.of(context).pop();
+                  return;
+                }
+                dynamic ses;
+                OnGoingSession s = OnGoingSession(
+                    startTime: startTime ?? DateTime.now(),
+                    duration: duration,
+                    excerciseInfo: excerciseInfo,
+                    selectedBodyParts: selectedBodyParts);
+
+                SessionReturned r = SessionReturned(
+                    onGoingSession: s, finished: false, session: null);
+                Navigator.of(context).pop(r);
               },
             ),
             backgroundColor: Colors.blue,
@@ -175,6 +212,7 @@ class _SessionState extends State<Session> {
                 BodyPart(
                     bodyPartDataList: bodyPartData,
                     title: bodyPart,
+                    onGoingSession: widget.onGoingSession != null,
                     duration: duration,
                     excerciseInfo: excerciseInfo,
                     addExcerciseInfo: addExcerciseInfo,
@@ -211,8 +249,10 @@ class _SessionState extends State<Session> {
             date: DateTime.now().millisecondsSinceEpoch, duration: duration);
         session.excerciseInfo = data;
         Navigator.of(context).push(CupertinoPageRoute(
-            builder: (context) =>
-                PostSessionResults(session: session, bodyParts: bodyPartData)));
+            builder: (context) => PostSessionResults(
+                session: session,
+                bodyParts: bodyPartData,
+                onGoingSession: true)));
       },
     );
     // set up the AlertDialog

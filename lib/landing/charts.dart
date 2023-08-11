@@ -600,7 +600,9 @@ class _SparkLineState extends State<SparkLine> {
                       return const Text("I don't have any data yet");
                     }
                     return SfCartesianChart(
-                      primaryXAxis: CategoryAxis(),
+                      primaryXAxis: CategoryAxis(
+                        interval: 3,
+                      ),
                       primaryYAxis: NumericAxis(
                         visibleMinimum:
                             selectedInfo == ExcerciseInfoType.reps ? 2 : null,
@@ -741,12 +743,27 @@ class _SparkLineState extends State<SparkLine> {
   }
 }
 
+final months = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December'
+];
+
 String getDate(int ms, TimeOffset offset) {
   final DateTime date = DateTime.fromMillisecondsSinceEpoch(ms);
 
   switch (offset) {
     case TimeOffset.w:
-      return '${date.day}/${date.month}/${date.year} - ${date.hour}:${date.minute < 10 ? '0' : ''}${date.minute}';
+      return '${date.day} ${months[date.month].substring(0, 3)} - ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
     case TimeOffset.m:
       return DateFormat("MMMM").format(date);
     case TimeOffset.y:
