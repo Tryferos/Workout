@@ -143,9 +143,10 @@ class _ProfilingWidgetState extends State<ProfilingWidget> {
 
   ImageProvider getImage() {
     if (image_path != null) {
-      FileImage(File(image_path!));
+      return FileImage(File(image_path!));
     }
-    return const AssetImage('assets/profile.png');
+    File imageFile = File('assets/profile.png');
+    return AssetImage(imageFile.path);
   }
 
   @override
@@ -174,10 +175,7 @@ class _ProfilingWidgetState extends State<ProfilingWidget> {
                     children: [
                       CircleAvatar(
                         radius: 50,
-                        backgroundImage: image_path != null
-                            ? FileImage(File(image_path!), scale: 1)
-                            : const AssetImage('assets/profile.png')
-                                as ImageProvider,
+                        backgroundImage: getImage(),
                       ),
                       Positioned(
                         bottom: 4,

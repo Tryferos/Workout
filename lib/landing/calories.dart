@@ -21,6 +21,12 @@ class _CaloriesChartState extends State<CaloriesChart> {
     readData();
   }
 
+  @override
+  void didUpdateWidget(CaloriesChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    readData();
+  }
+
   void readData() async {
     if (health == null) return;
     DateTime now = DateTime.now();

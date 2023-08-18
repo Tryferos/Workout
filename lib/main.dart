@@ -5,14 +5,46 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 Future<Database>? database;
-//build/app/outputs/flutter-apk/app-release.apk- signer
-//build/app/outputs/apk/release/app-release.apk - signer2
-//build\app\outputs\flutter-apk\app-release.apk - install
-//68:8D:7E:92:43:74:EC:88:E0:CE:05:77:22:93:4C:9D:74:54:96:A7 - signer2
-//68:8D:7E:92:43:74:EC:88:E0:CE:05:77:22:93:4C:9D:74:54:96:A7 signer1
-//68:8D:7E:92:43:74:EC:88:E0:CE:05:77:22:93:4C:9D:74:54:96:A7
 
 List<Session> sessions = [];
+
+Future<void> initDb(Database db) async {
+  await db.execute('drop table if exists Schedule');
+  await db.execute('drop table if exists Profile');
+  await db.execute('drop table if exists Goals');
+  await db.execute('drop table if exists GoalExcerciseItem');
+  await db.execute('drop table if exists WorkoutGoal');
+  await db.execute('drop table if exists ExcerciseGoal');
+  await db.execute('drop table if exists Notes');
+  await db.execute('drop table if exists Sets');
+  await db.execute('drop table if exists ExcerciseInfo');
+  await db.execute('drop table if exists Session');
+
+  await db.execute(
+      'create table if not exists Schedule(id integer primary key autoincrement not null, bodyParts text, day text)');
+  //Goals
+  await db.execute(
+      'create table if not exists Profile(id integer primary key autoincrement not null, username text, image_path text)');
+  await db.execute(
+      'create table if not exists Goals(id integer primary key autoincrement not null, title text, date integer)');
+  await db.execute(
+      'create table if not exists GoalExcerciseItem(id integer primary key autoincrement not null, name text, startingReps integer, startingWeight double, goalReps integer, goalWeight double,bodyPart text, icon_url text)');
+  await db.execute(
+      'create table if not exists WorkoutGoal(id integer primary key autoincrement not null, number integer, untilDate integer, goalId integer,FOREIGN KEY(goalId) REFERENCES Goals(id) ON DELETE CASCADE )');
+  await db.execute(
+      'create table if not exists ExcerciseGoal(id integer primary key autoincrement not null, goalId integer,goalExcerciseItemId integer,FOREIGN KEY(goalId) REFERENCES Goals(id) ON DELETE CASCADE , FOREIGN KEY(goalExcerciseItemId) REFERENCES GoalExcerciseItem(id) ON DELETE CASCADE )');
+
+  //Workout
+  await db.execute(
+    'create table if not exists Notes(id integer primary key autoincrement not null, note text, excerciseName text, date integer)',
+  );
+  await db.execute(
+      'create table if not exists Sets(id integer primary key autoincrement not null, reps integer, weight double, excerciseInfoId integer, FOREIGN KEY(excerciseInfoId) REFERENCES excerciseInfo(id) ON DELETE CASCADE )');
+  await db.execute(
+      "CREATE TABLE if not exists ExcerciseInfo(id integer primary key autoincrement not null, excerciseName text, notes text,sessionId integer,FOREIGN KEY(sessionId) REFERENCES Session(id) ON DELETE CASCADE )");
+  return db.execute(
+      'create table if not exists Session(id integer primary key autoincrement not null, date integer, duration integer)');
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,32 +54,14 @@ void main() async {
       await db.execute("PRAGMA foreign_keys=ON");
     },
     onCreate: (db, version) async {
-      await db.execute(
-          'create table if not exists Schedule(id integer primary key autoincrement not null, bodyParts text, day text)');
-      //Goals
-      await db.execute(
-          'create table if not exists Profile(id integer primary key autoincrement not null, username text, image_path text)');
-      await db.execute(
-          'create table if not exists Goals(id integer primary key autoincrement not null, title text, date integer)');
-      await db.execute(
-          'create table if not exists GoalExcerciseItem(id integer primary key autoincrement not null, name text, startingReps integer, startingWeight double, goalReps integer, goalWeight double,bodyPart text, icon_url text)');
-      await db.execute(
-          'create table if not exists WorkoutGoal(id integer primary key autoincrement not null, number integer, untilDate integer, goalId integer,FOREIGN KEY(goalId) REFERENCES Goals(id) ON DELETE CASCADE )');
-      await db.execute(
-          'create table if not exists ExcerciseGoal(id integer primary key autoincrement not null, goalId integer,goalExcerciseItemId integer,FOREIGN KEY(goalId) REFERENCES Goals(id) ON DELETE CASCADE , FOREIGN KEY(goalExcerciseItemId) REFERENCES GoalExcerciseItem(id) ON DELETE CASCADE )');
-
-      //Workout
-      await db.execute(
-        'create table if not exists Notes(id integer primary key autoincrement not null, note text, excerciseName text, date integer)',
-      );
-      await db.execute(
-          'create table if not exists Sets(id integer primary key autoincrement not null, reps integer, weight double, excerciseInfoId integer, FOREIGN KEY(excerciseInfoId) REFERENCES excerciseInfo(id) ON DELETE CASCADE )');
-      await db.execute(
-          "CREATE TABLE if not exists ExcerciseInfo(id integer primary key autoincrement not null, excerciseName text, notes text,sessionId integer,FOREIGN KEY(sessionId) REFERENCES Session(id) ON DELETE CASCADE )");
-      return db.execute(
-          'create table if not exists Session(id integer primary key autoincrement not null, date integer, duration integer)');
+      return await initDb(db);
     },
-    version: 1,
+    onUpgrade: (db, oldVersion, newVersion) async {
+      if (oldVersion == 1) {
+        return await initDb(db);
+      }
+    },
+    version: 2,
   );
   runApp(const MyApp());
 }

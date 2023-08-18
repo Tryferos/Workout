@@ -54,7 +54,11 @@ class _ScheduleState extends State<Schedule> {
                     return getDayWidget(index, snapshot.data as List<Session>);
                   }
                   return const Center(
-                    child: Center(child: CircularProgressIndicator()),
+                    child: Center(
+                        child: CircularProgressIndicator(
+                      color: Colors.blue,
+                      strokeWidth: 4,
+                    )),
                   );
                 },
                 future: Session.sessionsRecent(DateTime.now().weekday - 1),

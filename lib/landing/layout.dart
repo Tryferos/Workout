@@ -19,9 +19,22 @@ import 'package:permission_handler/permission_handler.dart';
 import '../database.dart';
 import '../index.dart';
 import '../main.dart';
+import 'daily.dart';
 
-const types = [HealthDataType.STEPS, HealthDataType.ACTIVE_ENERGY_BURNED];
-const permissions = [HealthDataAccess.READ_WRITE, HealthDataAccess.READ_WRITE];
+const types = [
+  HealthDataType.STEPS,
+  HealthDataType.ACTIVE_ENERGY_BURNED,
+  HealthDataType.MOVE_MINUTES,
+  HealthDataType.DISTANCE_DELTA,
+  HealthDataType.WORKOUT
+];
+const permissions = [
+  HealthDataAccess.READ_WRITE,
+  HealthDataAccess.READ_WRITE,
+  HealthDataAccess.READ_WRITE,
+  HealthDataAccess.READ_WRITE,
+  HealthDataAccess.READ_WRITE,
+];
 
 class LayoutLanding extends StatefulWidget {
   const LayoutLanding({super.key});
@@ -57,26 +70,29 @@ class _LayoutLandingState extends State<LayoutLanding> {
   HealthFactory? health;
   bool refresh = false;
   OnGoingSession? onGoingSession;
+  final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
   @override
   void initState() {
     super.initState();
     setState(() {
-      requestPermissions();
       sessionsCurrent = sessions;
-      health = HealthFactory(useHealthConnectIfAvailable: true);
     });
+    requestPermissions();
   }
 
-  final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
   void requestPermissions() async {
     if (defaultTargetPlatform == TargetPlatform.android) {
       final androidInfo = await deviceInfo.androidInfo;
       if (!androidInfo.isPhysicalDevice) return;
     }
+    HealthFactory h = HealthFactory(useHealthConnectIfAvailable: true);
     await Permission.activityRecognition.request();
     await Permission.location.request();
-    await health!.requestAuthorization(types);
-    await health!.requestAuthorization(types, permissions: permissions);
+    await h.requestAuthorization(types);
+    await h.requestAuthorization(types, permissions: permissions);
+    setState(() {
+      health = h;
+    });
   }
 
   @override
@@ -131,6 +147,7 @@ class _LayoutLandingState extends State<LayoutLanding> {
                     height: 20,
                   ),
                   Button(
+                      enabled: onGoingSession == null,
                       title: 'Start Workout',
                       clickHandler: () {
                         Navigator.push(
@@ -141,7 +158,13 @@ class _LayoutLandingState extends State<LayoutLanding> {
                         ).then(handleSessionReturn);
                       }),
                   const SizedBox(
-                    height: 20,
+                    height: 40,
+                  ),
+                  DailyStats(
+                    health: health,
+                  ),
+                  const SizedBox(
+                    height: 40,
                   ),
                   SparkWidget(refresh: refresh),
                   const SizedBox(
@@ -158,6 +181,7 @@ class _LayoutLandingState extends State<LayoutLanding> {
                     height: 20,
                   ),
                   Button(
+                      enabled: onGoingSession == null,
                       title: 'Add Goals',
                       clickHandler: () {
                         Navigator.push(
@@ -272,8 +296,13 @@ class _LayoutLandingState extends State<LayoutLanding> {
 }
 
 class Button extends StatelessWidget {
-  const Button({super.key, required this.title, required this.clickHandler});
+  const Button(
+      {super.key,
+      required this.title,
+      required this.clickHandler,
+      required this.enabled});
   final String title;
+  final bool enabled;
   final Function clickHandler;
 
   @override
@@ -291,6 +320,7 @@ class Button extends StatelessWidget {
             backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
           ),
           onPressed: () {
+            if (!enabled) return;
             clickHandler();
           },
           child: Row(

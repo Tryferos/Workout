@@ -35,6 +35,16 @@ class _StepsSparkLineState extends State<StepsSparkLine> {
     readData();
   }
 
+  @override
+  void didUpdateWidget(StepsSparkLine oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (health == null) {
+      steps = Future.value([]);
+      return;
+    }
+    readData();
+  }
+
   int get daysOffset {
     switch (selected) {
       case DaysOffset.W:
@@ -156,10 +166,6 @@ class _StepsSparkLineState extends State<StepsSparkLine> {
             ),
           ),
         ),
-        const Divider(
-          height: 22,
-          color: Colors.grey,
-        ),
         FutureBuilder(
             future: steps,
             builder: (context, snapshot) {
@@ -175,7 +181,7 @@ class _StepsSparkLineState extends State<StepsSparkLine> {
                       dateFormat: DateFormat('dd/MM'),
                       minimum:
                           DateTime.now().subtract(Duration(days: daysOffset)),
-                      maximum: DateTime.now().subtract(const Duration(days: 0)),
+                      maximum: DateTime.now().subtract(const Duration(days: 1)),
                     ),
                     primaryYAxis: NumericAxis(
                       visibleMinimum: 0,

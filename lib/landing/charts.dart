@@ -187,6 +187,7 @@ class _ExcercisesChartState extends State<ExcercisesChart> {
                     series: <CircularSeries>[
                       // Renders radial bar chart
                       RadialBarSeries<ExcerciseChart, String>(
+                          name: 'Excercise',
                           radius: '100%',
                           cornerStyle: CornerStyle.bothCurve,
                           gap:
