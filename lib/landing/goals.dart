@@ -4,6 +4,7 @@ import 'package:circular_chart_flutter/circular_chart_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/landing/goalStepper.dart';
+import 'package:health/health.dart';
 
 import '../database.dart';
 import '../excercise.dart' as Excercise_Package;
@@ -11,7 +12,9 @@ import '../excercise.dart';
 import '../main.dart';
 
 class AllGoals extends StatefulWidget {
-  const AllGoals({super.key, required this.refresh});
+  const AllGoals({super.key, required this.refresh, required this.health});
+
+  final HealthFactory health;
 
   final VoidCallback refresh;
 
@@ -40,16 +43,15 @@ class _AllGoalsState extends State<AllGoals> {
 
   void readGoals() {
     setState(() {
-      goals = Goal.getGoals(true);
-      cGoals = Goal.getCompletedGoals();
-      fGoals = Goal.getFailedGoals();
+      goals = Goal.getGoals(true, widget.health);
+      cGoals = Goal.getCompletedGoals(widget.health);
+      fGoals = Goal.getFailedGoals(widget.health);
     });
   }
 
   @override
   void didUpdateWidget(AllGoals oldWidget) {
     super.didUpdateWidget(oldWidget);
-    print('update');
     readGoals();
   }
 
@@ -210,9 +212,11 @@ class _AllGoalsState extends State<AllGoals> {
 }
 
 class WorkoutGoals extends StatefulWidget {
-  const WorkoutGoals({super.key, required this.refresh});
+  const WorkoutGoals({super.key, required this.refresh, required this.health});
 
   final VoidCallback refresh;
+
+  final HealthFactory? health;
 
   @override
   State<WorkoutGoals> createState() => _WorkoutGoalsState();
@@ -235,7 +239,7 @@ class _WorkoutGoalsState extends State<WorkoutGoals> {
   }
 
   void updateWidget() async {
-    List<Goal> updatedList = await Goal.getGoals(false);
+    List<Goal> updatedList = await Goal.getGoals(false, widget.health);
     setState(() {
       list = Future.value(updatedList);
     });
@@ -266,8 +270,7 @@ class _WorkoutGoalsState extends State<WorkoutGoals> {
                     CupertinoPageRoute(
                         fullscreenDialog: true,
                         builder: (context) => AllGoals(
-                              refresh: widget.refresh,
-                            )),
+                            refresh: widget.refresh, health: widget.health!)),
                   );
                 },
                 child: const Text(
@@ -329,7 +332,7 @@ class _GoalCreationState extends State<GoalCreation> {
   }
 }
 
-enum GoalType { singleExcercise, multiExcercise, workouts }
+enum GoalType { singleExcercise, multiExcercise, workouts, steps }
 
 abstract class Goal {
   Goal({required this.title, required this.date, required this.type});
@@ -395,7 +398,7 @@ abstract class Goal {
     return startingSet;
   }
 
-  static Future<List<Goal>> fetchAllGoals() async {
+  static Future<List<Goal>> fetchAllGoals(HealthFactory health) async {
     final db = await database;
     if (db == null) return [];
     List<Map<String, dynamic>> goals =
@@ -403,6 +406,31 @@ abstract class Goal {
     List<Goal> goalList = [];
     for (var g in goals) {
       List<ExcerciseGoalItem> excercises = [];
+      List<Map<String, dynamic>> stepsGoals = await db
+          .query('StepsGoal', where: 'goalId = ?', whereArgs: [g['id']]);
+      if (stepsGoals.isNotEmpty) {
+        bool isDaily = stepsGoals[0]['isDaily'] == 1 ? true : false;
+        DateTime now = DateTime.now();
+        DateTime startDate = !isDaily
+            ? DateTime.fromMillisecondsSinceEpoch(g['date'])
+            : DateTime(now.year, now.month, now.day, 0, 0, 0);
+        DateTime endDate = DateTime.now();
+        int steps =
+            await health.getTotalStepsInInterval(startDate, endDate) ?? 0;
+        double distance = 0;
+        for (var element in (await health.getHealthDataFromTypes(
+            startDate, endDate, [HealthDataType.DISTANCE_DELTA]))) {
+          distance += double.parse(element.value.toString());
+        }
+        goalList.add(StepsGoal(
+          title: g['title'],
+          currentSteps: steps,
+          currentDistance: distance,
+          date: DateTime.fromMillisecondsSinceEpoch(g['date']),
+          steps: stepsGoals[0]['steps'],
+          isDaily: stepsGoals[0]['isDaily'] == 1 ? true : false,
+        ));
+      }
       List<Map<String, dynamic>> excerciseGoals = await db
           .query('ExcerciseGoal', where: 'goalId = ?', whereArgs: [g['id']]);
       if (excerciseGoals.isEmpty) {
@@ -447,8 +475,9 @@ abstract class Goal {
     return goalList;
   }
 
-  static Future<List<Goal>> getGoals(bool getAll) async {
-    List<Goal> goalList = await fetchAllGoals();
+  static Future<List<Goal>> getGoals(bool getAll, HealthFactory? health) async {
+    if (health == null) return [];
+    List<Goal> goalList = await fetchAllGoals(health);
     goalList.sort((a, b) => b.getProgress().compareTo(a.getProgress()));
     goalList = goalList
         .where(
@@ -458,16 +487,150 @@ abstract class Goal {
         0, getAll == true ? goalList.length : min(2, goalList.length));
   }
 
-  static Future<List<Goal>> getFailedGoals() async {
-    return (await fetchAllGoals())
+  static Future<List<Goal>> getFailedGoals(HealthFactory? health) async {
+    if (health == null) return [];
+    return (await fetchAllGoals(health))
         .where((element) => element.getProgress() < 0)
         .toList();
   }
 
-  static Future<List<Goal>> getCompletedGoals() async {
-    return (await fetchAllGoals())
+  static Future<List<Goal>> getCompletedGoals(HealthFactory? health) async {
+    if (health == null) return [];
+    return (await fetchAllGoals(health))
         .where((element) => element.isCompleted())
         .toList();
+  }
+}
+
+class StepsGoal extends Goal {
+  StepsGoal(
+      {required String title,
+      required DateTime date,
+      required this.steps,
+      required this.isDaily,
+      this.currentSteps,
+      this.currentDistance,
+      this.distance,
+      this.duration})
+      : super(
+            date: date.millisecondsSinceEpoch,
+            title: title,
+            type: GoalType.steps);
+
+  int steps;
+  int? currentSteps;
+  double? currentDistance;
+  double? distance;
+  int? duration;
+  bool isDaily;
+
+  @override
+  void writeGoal() async {
+    final db = await database;
+    if (db == null) return;
+    int id = await db.insert('Goals', {
+      'title': title,
+      'date': date,
+    });
+    await db.insert('StepsGoal', {
+      'steps': steps,
+      'isDaily': isDaily ? 1 : 0,
+      'distance': distance,
+      'duration': duration,
+      'goalId': id
+    });
+  }
+
+  @override
+  double getProgress() {
+    return ((currentSteps ?? 0) / steps);
+  }
+
+  @override
+  bool isCompleted() {
+    return getProgress() >= 1;
+  }
+
+  String formatDate() {
+    DateTime date = DateTime.fromMillisecondsSinceEpoch(this.date);
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget getGoalCard(BuildContext context, VoidCallback refresh) {
+    return ListTile(
+      onLongPress: () {
+        super.removeGoal(context, refresh);
+      },
+      shape: const RoundedRectangleBorder(
+          side: BorderSide(color: Colors.grey, width: 0.75),
+          borderRadius: BorderRadius.all(Radius.circular(10))),
+      title: Text('$steps steps ${isDaily ? 'Daily' : formatDate()}',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      subtitle: Text(
+          !isCompleted()
+              ? '${((steps - (currentSteps ?? 0)) / 1000).toStringAsFixed(2)}k steps still remaining.'
+              : 'surpassed by ${steps - (currentSteps ?? 0).abs()}.',
+          style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color.fromARGB(255, 134, 131, 131))),
+      trailing: getProgress() < 0
+          ? Padding(
+              padding: const EdgeInsets.only(right: 5),
+              child: Container(
+                height: 55,
+                width: 55,
+                decoration: const BoxDecoration(
+                    border: Border.fromBorderSide(
+                        BorderSide(color: Colors.red, width: 2)),
+                    borderRadius: BorderRadius.all(Radius.circular(100))),
+                child: const Icon(Icons.remove_circle, color: Colors.red),
+              ))
+          : getProgress() < 1
+              ? AnimatedCircularChart(
+                  percentageValues: true,
+                  holeRadius: 24,
+                  duration: const Duration(milliseconds: 500),
+                  holeLabel: '${(getProgress() * 100).toStringAsFixed(1)}%',
+                  key: const Key('chart'),
+                  size: const Size(65.0, 65.0),
+                  initialChartData: <CircularStackEntry>[
+                    CircularStackEntry(
+                      <CircularSegmentEntry>[
+                        CircularSegmentEntry(
+                          getProgress() * 100,
+                          getProgress() < 0
+                              ? Colors.red[400]
+                              : getProgress() >= 1
+                                  ? Colors.green[500]
+                                  : Colors.blue[400],
+                          rankKey: 'completed',
+                        ),
+                        CircularSegmentEntry(
+                          (100 - (getProgress() * 100)),
+                          const Color.fromARGB(255, 227, 231, 233),
+                          rankKey: 'remaining',
+                        ),
+                      ],
+                      rankKey: 'progress',
+                    ),
+                  ],
+                  chartType: CircularChartType.Radial,
+                )
+              : Padding(
+                  padding: const EdgeInsets.only(right: 5),
+                  child: Container(
+                      height: 55,
+                      width: 55,
+                      decoration: const BoxDecoration(
+                          border: Border.fromBorderSide(
+                              BorderSide(color: Colors.green, width: 2)),
+                          borderRadius: BorderRadius.all(Radius.circular(100))),
+                      child: const Icon(Icons.check, color: Colors.green)),
+                ),
+      leading: const Icon(Icons.directions_walk_outlined),
+    );
   }
 }
 

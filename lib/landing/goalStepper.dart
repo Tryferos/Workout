@@ -23,10 +23,31 @@ class _GoalStepperWidgetState extends State<GoalStepperWidget> {
   Excercise? selectedExcercise;
   Excercise_Package.Set? excerciseInfo;
   int workouts = 0;
+  int steps = 2500;
+  double distance = 2.5;
+  bool isDaily = false;
   DateTime? deadline;
   void changeWorkouts(int n) {
     setState(() {
       workouts = n;
+    });
+  }
+
+  void changeIsDaily(bool? n) {
+    setState(() {
+      isDaily = n ?? false;
+    });
+  }
+
+  void changeSteps(dynamic n) {
+    setState(() {
+      steps = n;
+    });
+  }
+
+  void changeDistance(dynamic n) {
+    setState(() {
+      distance = n;
     });
   }
 
@@ -62,7 +83,7 @@ class _GoalStepperWidgetState extends State<GoalStepperWidget> {
           title: title,
           date: DateTime.now());
       goal.writeGoal();
-    } else {
+    } else if (goalType == 'Excercise') {
       Set startingSet = Goal.getSet(selectedExcercise!.name);
 
       ExcerciseGoalItem item = ExcerciseGoalItem(
@@ -73,6 +94,14 @@ class _GoalStepperWidgetState extends State<GoalStepperWidget> {
           startingSet: startingSet);
       SingleExcerciseGoal goal = SingleExcerciseGoal(
           excercise: item, title: title, date: DateTime.now());
+      goal.writeGoal();
+    } else {
+      StepsGoal goal = StepsGoal(
+          steps: steps,
+          distance: distance,
+          isDaily: isDaily,
+          title: title,
+          date: DateTime.now());
       goal.writeGoal();
     }
     widget.refresh();
@@ -135,7 +164,9 @@ class _GoalStepperWidgetState extends State<GoalStepperWidget> {
                       ElevatedButton(
                           onPressed: () {},
                           child: const Text('Select a deadline'))
-                    else if (details.currentStep == 3 && title.length < 4)
+                    else if (details.currentStep == 3 &&
+                        title.length < 4 &&
+                        goalType != 'Steps')
                       ElevatedButton(
                           onPressed: () {}, child: const Text('Set a title'))
                     else
@@ -167,21 +198,55 @@ class _GoalStepperWidgetState extends State<GoalStepperWidget> {
                     label: 'Excercise',
                     value: 'Excercise',
                     leadingIcon: Icon(Icons.fitness_center_outlined)),
+                DropdownMenuEntry(
+                    label: 'Walking',
+                    value: 'Steps',
+                    leadingIcon: Icon(Icons.directions_walk)),
               ],
             ),
           ),
           if (goalType == 'Workout')
             ...getWorkoutGoalStep()
+          else if (goalType == 'Excercise')
+            ...getExcercisesStep()
           else
-            ...getExcercisesStep(),
-          Step(
-              content: TitleWidget(changeTitle: changeTitle),
-              title: const Text('Add a title for your goal')),
+            ...getStepsStep(),
+          if (goalType != 'Steps')
+            Step(
+                content: TitleWidget(changeTitle: changeTitle),
+                title: const Text('Add a title for your goal')),
           const Step(
               content: Text(''),
               title: Text(
                   "You're almost finished! Check your info and start your goal")),
         ]);
+  }
+
+  List<Step> getStepsStep() {
+    return [
+      Step(
+          title: const Text('Select the number of steps you want to walk.'),
+          content: StepsSlider(
+              unit: ' k',
+              label: 'Steps',
+              onChange: changeSteps,
+              type: NumType.number)),
+      Step(
+        title: const Text('Select the total distance you want to walk.'),
+        content: StepsSlider(
+            unit: '',
+            label: 'km',
+            onChange: changeDistance,
+            type: NumType.double),
+      ),
+      Step(
+          title: const Text('Do you want this to be a daily goal?'),
+          content: SwitchListTile(
+            value: isDaily,
+            onChanged: changeIsDaily,
+            title: Text('Daily goal is ${isDaily ? 'on' : 'off'}'),
+          ))
+    ];
   }
 
   List<Step> getExcercisesStep() {
@@ -191,7 +256,7 @@ class _GoalStepperWidgetState extends State<GoalStepperWidget> {
             excerciseName: selectedExcercise?.name,
             changeExcercise: changeExcercise,
           ),
-          title: const Text('Select an Excercise')),
+          title: const Text('Select an Excercise.')),
       Step(
           content: AddExcerciseInfo(
             changeExcerciseInfo: changeExcerciseInfo,
@@ -203,7 +268,7 @@ class _GoalStepperWidgetState extends State<GoalStepperWidget> {
   List<Step> getWorkoutGoalStep() {
     return [
       Step(
-          title: const Text('Select the number of workouts you want to do'),
+          title: const Text('Select the number of workouts you want to do.'),
           content: WorkoutsSlider(
             changeWorkouts: changeWorkouts,
           )),
@@ -211,6 +276,81 @@ class _GoalStepperWidgetState extends State<GoalStepperWidget> {
           content: DatePickerWidget(changeDeadline: changeDeadline),
           title: const Text('Choose a deadline for your goal')),
     ];
+  }
+}
+
+enum NumType { number, double }
+
+class StepsSlider extends StatefulWidget {
+  const StepsSlider(
+      {super.key,
+      required this.label,
+      required this.type,
+      required this.unit,
+      required this.onChange});
+
+  final String label;
+  final NumType type;
+  final String unit;
+  final void Function(dynamic) onChange;
+
+  @override
+  State<StepsSlider> createState() => _StepsSliderState();
+}
+
+class _StepsSliderState extends State<StepsSlider> {
+  late WeightSliderController _controller;
+  double _weight = 2.5;
+  @override
+  void initState() {
+    super.initState();
+    _controller = WeightSliderController(
+        initialWeight: _weight, minWeight: 1, interval: 0.1);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          height: 50,
+          child: Text(
+            "${(_weight).toStringAsFixed(1)}${widget.unit} ${widget.label}",
+            style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.w500),
+          ),
+        ),
+        VerticalWeightSlider(
+          controller: _controller,
+          maxWeight: 50,
+          decoration: const PointerDecoration(
+            width: 130.0,
+            height: 3.0,
+            largeColor: Color(0xFF898989),
+            mediumColor: Color(0xFFC5C5C5),
+            smallColor: Color(0xFFF0F0F0),
+            gap: 30.0,
+          ),
+          onChanged: (double value) {
+            setState(() {
+              _weight = value;
+              if (widget.type == NumType.double) {
+                widget.onChange(_weight);
+                return;
+              }
+              widget.onChange((_weight * 1000).round());
+            });
+          },
+          indicator: Container(
+            height: 3.0,
+            width: 200.0,
+            alignment: Alignment.centerLeft,
+            color: Colors.red[300],
+          ),
+        )
+      ],
+    );
   }
 }
 

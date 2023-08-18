@@ -17,6 +17,7 @@ Future<void> initDb(Database db) async {
   await db.execute('drop table if exists ExcerciseGoal');
   await db.execute('drop table if exists Notes');
   await db.execute('drop table if exists Sets');
+  await db.execute('drop table if exists StepsGoal');
   await db.execute('drop table if exists ExcerciseInfo');
   await db.execute('drop table if exists Session');
 
@@ -33,7 +34,8 @@ Future<void> initDb(Database db) async {
       'create table if not exists WorkoutGoal(id integer primary key autoincrement not null, number integer, untilDate integer, goalId integer,FOREIGN KEY(goalId) REFERENCES Goals(id) ON DELETE CASCADE )');
   await db.execute(
       'create table if not exists ExcerciseGoal(id integer primary key autoincrement not null, goalId integer,goalExcerciseItemId integer,FOREIGN KEY(goalId) REFERENCES Goals(id) ON DELETE CASCADE , FOREIGN KEY(goalExcerciseItemId) REFERENCES GoalExcerciseItem(id) ON DELETE CASCADE )');
-
+  await db.execute(
+      'create table if not exists StepsGoal(id integer primary key autoincrement not null, steps integer, isDaily boolean default false, distance double, duration int, goalId integer,FOREIGN KEY(goalId) REFERENCES Goals(id) ON DELETE CASCADE )');
   //Workout
   await db.execute(
     'create table if not exists Notes(id integer primary key autoincrement not null, note text, excerciseName text, date integer)',
@@ -57,11 +59,11 @@ void main() async {
       return await initDb(db);
     },
     onUpgrade: (db, oldVersion, newVersion) async {
-      if (oldVersion == 1) {
+      if (oldVersion == 3) {
         return await initDb(db);
       }
     },
-    version: 2,
+    version: 4,
   );
   runApp(const MyApp());
 }

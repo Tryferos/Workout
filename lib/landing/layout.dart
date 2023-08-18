@@ -171,6 +171,7 @@ class _LayoutLandingState extends State<LayoutLanding> {
                     height: 20,
                   ),
                   WorkoutGoals(
+                    health: health,
                     refresh: () {
                       setState(() {
                         refresh = !refresh;
