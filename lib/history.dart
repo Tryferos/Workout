@@ -3,7 +3,10 @@ import 'package:flutter_application_1/bodyPart.dart';
 import 'package:flutter_application_1/excercise.dart';
 
 class ExcerciseHistoryWidget extends StatefulWidget {
-  const ExcerciseHistoryWidget({super.key, required this.excercise});
+  const ExcerciseHistoryWidget({
+    super.key,
+    required this.excercise,
+  });
 
   final Excercise excercise;
 
@@ -24,7 +27,9 @@ class _ExcerciseHistoryWidgetState extends State<ExcerciseHistoryWidget> {
     List<ExcerciseHistory> tmp =
         await ExcerciseInfo.excercisesInfoHistory(excercise.name);
     tmp.sort((a, b) => b.date.compareTo(a.date));
-    list = Future.value(tmp);
+    setState(() {
+      list = Future.value(tmp);
+    });
   }
 
   @override

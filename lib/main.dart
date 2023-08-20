@@ -11,13 +11,13 @@ List<Session> sessions = [];
 Future<void> initDb(Database db) async {
   await db.execute('drop table if exists Schedule');
   await db.execute('drop table if exists Profile');
-  await db.execute('drop table if exists Goals');
   await db.execute('drop table if exists GoalExcerciseItem');
   await db.execute('drop table if exists WorkoutGoal');
   await db.execute('drop table if exists ExcerciseGoal');
+  await db.execute('drop table if exists StepsGoal');
+  await db.execute('drop table if exists Goals');
   await db.execute('drop table if exists Notes');
   await db.execute('drop table if exists Sets');
-  await db.execute('drop table if exists StepsGoal');
   await db.execute('drop table if exists ExcerciseInfo');
   await db.execute('drop table if exists Session');
 
@@ -59,11 +59,11 @@ void main() async {
       return await initDb(db);
     },
     onUpgrade: (db, oldVersion, newVersion) async {
-      if (oldVersion == 3) {
+      if (oldVersion < 6) {
         return await initDb(db);
       }
     },
-    version: 4,
+    version: 6,
   );
   runApp(const MyApp());
 }

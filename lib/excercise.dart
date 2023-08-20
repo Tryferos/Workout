@@ -2,12 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:action_slider/action_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/bodyPart.dart';
 import 'package:flutter_application_1/history.dart';
 import 'package:flutter_application_1/landing/charts.dart';
 import 'package:flutter_application_1/notes.dart';
 import 'package:flutter_application_1/session.dart';
+import 'package:flutter_application_1/widgets/slider.dart';
 import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';
 
@@ -97,46 +99,60 @@ class _ExcerciseWidgetState extends State<ExcerciseWidget> {
             },
           ),
           backgroundColor: const Color.fromARGB(255, 255, 255, 255)),
-      persistentFooterButtons: [
-        SizedBox(
-          width: MediaQuery.of(context).size.width,
-          height: 50,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextButton(
-                    onPressed: () {
-                      setState(() {
-                        addExcerciseInfo(excerciseInfo, true);
-                        checkApplied(false);
-                      });
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text(
-                      'Remove',
-                      style: TextStyle(
-                          color: Colors.blue,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700),
-                    )),
-                TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text(
-                      'Save',
-                      style: TextStyle(
-                          color: Colors.blue,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700),
-                    )),
-              ],
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 76),
+        child: Container(
+          child: ActionSlider.dual(
+            borderWidth: 0,
+            actionThresholdType: ThresholdType.release,
+            backgroundBorderRadius: BorderRadius.circular(8.0),
+            foregroundBorderRadius: BorderRadius.circular(8.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 0,
+                blurRadius: 4,
+                offset: const Offset(0, 2), // changes position of shadow
+              ),
+            ],
+            width: MediaQuery.of(context).size.width * 0.6,
+            toggleColor: Colors.blue,
+            backgroundColor: Colors.white,
+            startChild: const Text('Remove',
+                style: TextStyle(fontWeight: FontWeight.w700)),
+            endChild: const Text('Save',
+                style: TextStyle(fontWeight: FontWeight.w700)),
+            successIcon: const Icon(Icons.check, color: Colors.white),
+            failureIcon: const Icon(Icons.close, color: Colors.white),
+            icon: Padding(
+              padding: const EdgeInsets.only(right: 0.0),
+              child: Transform.rotate(
+                  angle: 0.0 * 3.14,
+                  child: const Icon(Icons.arrow_forward_ios_outlined,
+                      color: Colors.white, size: 18.0)),
             ),
+            startAction: (controller) async {
+              controller.success(); //starts success animation
+              await Future.delayed(const Duration(seconds: 1));
+              setState(() {
+                addExcerciseInfo(excerciseInfo, true);
+                checkApplied(false);
+              });
+              // ignore: use_build_context_synchronously
+              Navigator.of(context).pop();
+              controller.reset();
+            },
+            endAction: (controller) async {
+              controller.success(); //starts success animation
+              await Future.delayed(const Duration(seconds: 1));
+              // ignore: use_build_context_synchronously
+              Navigator.of(context).pop();
+              controller.reset();
+            },
           ),
         ),
-      ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         elevation: 4,
         selectedItemColor: Colors.white,
@@ -225,6 +241,7 @@ class _ExcerciseInputsState extends State<ExcerciseInputs> {
       if (excercise.sets.isNotEmpty) {
         numberOfReps = excercise.sets[0].reps;
         numberOfWeight = excercise.sets[0].weight;
+        numberOfSets = excercise.sets.length;
       } else {
         numberOfWeight = getMin();
       }
@@ -323,201 +340,419 @@ class _ExcerciseInputsState extends State<ExcerciseInputs> {
       children: [
         Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 24),
-            decoration: const BoxDecoration(
-                border:
-                    Border(bottom: BorderSide(color: Colors.grey, width: 0.3))),
             child: Column(
               children: [
                 Hero(
                   tag: 'excerciseIcon${excercise.excercise.name}',
                   child: SizedBox(
-                    height: 100,
+                    height: 175,
                     child: Image.network(excercise.excercise.getIconUrlColored),
                   ),
                 ),
                 const Padding(padding: EdgeInsets.only(top: 20)),
-                const Text(
-                  'Select number of Sets',
-                  style: TextStyle(
-                    fontSize: 16,
-                  ),
-                ),
-                Text(
-                  numberOfSets.toString(),
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                Slider(
-                  min: 1,
-                  max: 12,
-                  thumbColor: Colors.blue,
-                  activeColor: Colors.blue.withOpacity(0.7),
-                  value: numberOfSets.toDouble(),
-                  onChanged: (val) {
-                    setState(() {
-                      numberOfSets = val.toInt();
-                    });
+                InkWell(
+                  onTap: () => {
+                    showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.white,
+                        builder: (context) {
+                          return CustomBottomSlider(
+                            init: numberOfSets.toDouble(),
+                            max: 12,
+                            formatUnit: (unit) => unit.toInt(),
+                            min: 1,
+                            label: 'Sets',
+                            onChange: (val) {
+                              setState(() {
+                                numberOfSets = val.toInt();
+                                if (numberOfSets < sets.length) {
+                                  sets.removeRange(numberOfSets, sets.length);
+                                }
+                                selectEachRep = false;
+                                selectEachWeight = false;
+                                handleEachRep();
+                                handleEachWeight();
+                              });
+                            },
+                          );
+                        })
                   },
-                ),
-              ],
-            )),
-        Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-            decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey, width: 0.3)),
-            child: Column(
-              children: [
-                const Text(
-                  'Select number of reps',
-                  style: TextStyle(
-                    fontSize: 16,
-                  ),
-                ),
-                selectEachRep == true
-                    ? Center(
-                        child: GridView.count(
-                          crossAxisCount: 5,
-                          crossAxisSpacing: 2,
-                          mainAxisSpacing: 4,
-                          shrinkWrap: true,
-                          children: [
-                            for (var i = 0; i < numberOfSets; i++)
-                              DropdownButton(
-                                items: [
-                                  for (var i = 4; i < 16; i++)
-                                    DropdownMenuItem(
-                                      value: i,
-                                      child: Text(i.toString()),
-                                    )
-                                ],
-                                onChanged: (newVal) {
-                                  setState(() {
-                                    sets[i].reps = newVal as int;
-                                    editSets(sets);
-                                  });
-                                },
-                                value: sets[i].reps,
-                              ),
-                          ],
-                        ),
-                      )
-                    : DropdownButton(
-                        items: [
-                          for (var i = 4; i < 16; i++)
-                            DropdownMenuItem(
-                              value: i,
-                              child: Text(i.toString()),
-                            )
-                        ],
-                        onChanged: (newVal) {
-                          setState(() {
-                            numberOfReps = newVal as int;
-                            handleEachRep();
-                          });
-                        },
-                        value: numberOfReps,
-                      ),
-                Container(
-                    alignment: Alignment.bottomRight,
-                    transform: Matrix4.translationValues(10, 20, 0),
+                  child: Ink(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 16),
+                    decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(10)),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Select reps for each set',
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Color.fromARGB(255, 141, 138, 138))),
-                        Checkbox(
-                          checkColor: Colors.white,
-                          fillColor: MaterialStateProperty.resolveWith(
-                              (states) => Colors.blue),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5),
-                              side: const BorderSide(color: Colors.blue)),
-                          value: selectEachRep,
-                          onChanged: (n) {
-                            setState(() {
-                              selectEachRep = n!;
-                              handleEachRep();
-                            });
-                          },
+                        const Text(
+                          'Sets',
+                          style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold),
                         ),
+                        Text(
+                          numberOfSets.toString(),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        const Icon(Icons.edit, color: Colors.white)
                       ],
-                    ))
-              ],
-            )),
-        Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-            decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey, width: 0.3)),
-            child: Column(
-              children: [
-                const Text(
-                  'Select weight in kg',
-                  style: TextStyle(
-                    fontSize: 16,
+                    ),
                   ),
                 ),
-                selectEachWeight == true
-                    ? Center(
-                        child: GridView.count(
-                          crossAxisCount: 5,
-                          crossAxisSpacing: 2,
-                          mainAxisSpacing: 4,
-                          shrinkWrap: true,
-                          children: [
-                            for (var i = 0; i < numberOfSets; i++)
-                              DropdownButton(
-                                items: <DropdownMenuItem<double>>[
-                                  ...getWeight()
+                Divider(
+                  height: 32,
+                  color: Colors.grey[400],
+                ),
+                InkWell(
+                  onTap: () => {
+                    showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.white,
+                        builder: (context) {
+                          return CustomBottomSlider(
+                            init: numberOfReps.toDouble(),
+                            max: 30,
+                            formatUnit: (unit) => unit.toInt(),
+                            min: 1,
+                            label: 'Reps',
+                            onChange: (val) {
+                              setState(() {
+                                numberOfReps = val.toInt();
+                                handleEachRep();
+                              });
+                            },
+                          );
+                        })
+                  },
+                  child: !selectEachRep
+                      ? Ink(
+                          padding: const EdgeInsets.only(
+                              left: 18, right: 14, top: 14, bottom: 14),
+                          decoration: BoxDecoration(
+                              color: Colors.blue,
+                              borderRadius: BorderRadius.circular(10)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Reps',
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                numberOfReps.toString(),
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Row(
+                                children: [
+                                  InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          selectEachRep = !selectEachRep;
+                                          handleEachRep();
+                                        });
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(6.0),
+                                        child: Icon(
+                                          selectEachRep
+                                              ? Icons.view_agenda
+                                              : Icons.view_agenda_outlined,
+                                          color: Colors.white,
+                                        ),
+                                      )),
+                                  const SizedBox(
+                                    width: 4,
+                                  ),
+                                  const Icon(Icons.edit, color: Colors.white),
                                 ],
-                                onChanged: (newVal) {
-                                  setState(() {
-                                    sets[i].weight = newVal as double;
-                                  });
-                                },
-                                value: sets[i].weight,
+                              ),
+                            ],
+                          ),
+                        )
+                      : Column(
+                          children: [
+                            for (int i = 0; i < sets.length; i++)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 4),
+                                child: InkWell(
+                                    onTap: () => {
+                                          showModalBottomSheet(
+                                              context: context,
+                                              backgroundColor: Colors.white,
+                                              builder: (context) {
+                                                return CustomBottomSlider(
+                                                  init: sets[i].reps.toDouble(),
+                                                  max: 30,
+                                                  formatUnit: (unit) =>
+                                                      unit.toInt(),
+                                                  min: 1,
+                                                  label: 'Reps',
+                                                  onChange: (val) {
+                                                    setState(() {
+                                                      sets[i].reps =
+                                                          val.toInt();
+                                                    });
+                                                  },
+                                                );
+                                              })
+                                        },
+                                    child: Ink(
+                                      padding: const EdgeInsets.only(
+                                          left: 18,
+                                          right: 14,
+                                          top: 14,
+                                          bottom: 14),
+                                      decoration: BoxDecoration(
+                                          color: Colors.blue,
+                                          borderRadius:
+                                              BorderRadius.circular(10)),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            i == 0
+                                                ? 'Reps'
+                                                : '${i + 1}${i == 1 ? 'nd' : i == 2 ? 'rd' : 'th'}',
+                                            style: const TextStyle(
+                                                fontSize: 16,
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          Text(
+                                            sets[i].reps.toString(),
+                                            style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          Row(
+                                            children: [
+                                              i == 0
+                                                  ? InkWell(
+                                                      onTap: () {
+                                                        setState(() {
+                                                          selectEachRep =
+                                                              !selectEachRep;
+                                                          handleEachRep();
+                                                        });
+                                                      },
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(6.0),
+                                                        child: Icon(
+                                                          selectEachRep
+                                                              ? Icons
+                                                                  .view_agenda
+                                                              : Icons
+                                                                  .view_agenda_outlined,
+                                                          color: Colors.white,
+                                                        ),
+                                                      ))
+                                                  : const SizedBox(
+                                                      width: 22,
+                                                    ),
+                                              const SizedBox(
+                                                width: 4,
+                                              ),
+                                              const Icon(Icons.edit,
+                                                  color: Colors.white),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    )),
                               )
                           ],
                         ),
-                      )
-                    : DropdownButton(
-                        items: <DropdownMenuItem<double>>[...getWeight()],
-                        onChanged: (newVal) {
-                          setState(() {
-                            numberOfWeight = newVal as double;
-                            handleEachWeight();
-                          });
-                        },
-                        value: numberOfWeight,
-                      ),
-                Container(
-                    alignment: Alignment.bottomRight,
-                    transform: Matrix4.translationValues(10, 20, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        const Text('Select weight for each set',
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Color.fromARGB(255, 141, 138, 138))),
-                        Checkbox(
-                          checkColor: Colors.white,
-                          fillColor: MaterialStateProperty.resolveWith(
-                              (states) => Colors.blue),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5),
-                              side: const BorderSide(color: Colors.blue)),
-                          value: selectEachWeight,
-                          onChanged: (n) {
-                            setState(() {
-                              selectEachWeight = n!;
-                              handleEachWeight();
-                            });
-                          },
+                ),
+                Divider(
+                  height: 32,
+                  color: Colors.grey[400],
+                ),
+                InkWell(
+                  onTap: () => {
+                    showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.white,
+                        builder: (context) {
+                          return CustomBottomSlider(
+                            init: numberOfWeight!,
+                            max: getMax().toInt(),
+                            formatUnit: (unit) => unit,
+                            min: getMin().toInt(),
+                            interval: 0.5,
+                            label: 'kg',
+                            onChange: (val) {
+                              setState(() {
+                                numberOfWeight = val;
+                                handleEachWeight();
+                              });
+                            },
+                          );
+                        })
+                  },
+                  child: !selectEachWeight
+                      ? Ink(
+                          padding: const EdgeInsets.only(
+                              left: 18, right: 14, top: 14, bottom: 14),
+                          decoration: BoxDecoration(
+                              color: Colors.blue,
+                              borderRadius: BorderRadius.circular(10)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Weight',
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                numberOfWeight.toString(),
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Row(
+                                children: [
+                                  InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          selectEachWeight = !selectEachWeight;
+                                          handleEachWeight();
+                                        });
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(6.0),
+                                        child: Icon(
+                                          selectEachWeight
+                                              ? Icons.view_agenda
+                                              : Icons.view_agenda_outlined,
+                                          color: Colors.white,
+                                        ),
+                                      )),
+                                  const SizedBox(
+                                    width: 4,
+                                  ),
+                                  const Icon(Icons.edit, color: Colors.white),
+                                ],
+                              ),
+                            ],
+                          ),
+                        )
+                      : Column(
+                          children: [
+                            for (int i = 0; i < sets.length; i++)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 4),
+                                child: InkWell(
+                                    onTap: () => {
+                                          showModalBottomSheet(
+                                              context: context,
+                                              backgroundColor: Colors.white,
+                                              builder: (context) {
+                                                return CustomBottomSlider(
+                                                  init: sets[i].weight,
+                                                  max: getMax().toInt(),
+                                                  formatUnit: (unit) => unit,
+                                                  min: getMin().toInt(),
+                                                  label: 'kg',
+                                                  interval: 0.5,
+                                                  onChange: (val) {
+                                                    setState(() {
+                                                      sets[i].weight = val;
+                                                    });
+                                                  },
+                                                );
+                                              })
+                                        },
+                                    child: Ink(
+                                      padding: const EdgeInsets.only(
+                                          left: 18,
+                                          right: 14,
+                                          top: 14,
+                                          bottom: 14),
+                                      decoration: BoxDecoration(
+                                          color: Colors.blue,
+                                          borderRadius:
+                                              BorderRadius.circular(10)),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            i == 0
+                                                ? 'Weight'
+                                                : '${i + 1}${i == 1 ? 'nd' : i == 2 ? 'rd' : 'th'}',
+                                            style: const TextStyle(
+                                                fontSize: 16,
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          Text(
+                                            sets[i].weight.toString(),
+                                            style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          Row(
+                                            children: [
+                                              i == 0
+                                                  ? InkWell(
+                                                      onTap: () {
+                                                        setState(() {
+                                                          selectEachWeight =
+                                                              !selectEachWeight;
+                                                          handleEachWeight();
+                                                        });
+                                                      },
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(6.0),
+                                                        child: Icon(
+                                                          selectEachWeight
+                                                              ? Icons
+                                                                  .view_agenda
+                                                              : Icons
+                                                                  .view_agenda_outlined,
+                                                          color: Colors.white,
+                                                        ),
+                                                      ))
+                                                  : const SizedBox(
+                                                      width: 22,
+                                                    ),
+                                              const SizedBox(
+                                                width: 4,
+                                              ),
+                                              const Icon(Icons.edit,
+                                                  color: Colors.white),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    )),
+                              )
+                          ],
                         ),
-                      ],
-                    ))
+                )
               ],
             )),
         Opacity(
@@ -549,7 +784,10 @@ class _ExcerciseInputsState extends State<ExcerciseInputs> {
                   });
                 },
               ),
-            ))
+            )),
+        SizedBox(
+          height: latestWorkout == null ? 0 : 100,
+        )
       ],
     );
   }

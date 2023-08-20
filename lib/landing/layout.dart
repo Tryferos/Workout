@@ -88,6 +88,7 @@ class _LayoutLandingState extends State<LayoutLanding> {
     HealthFactory h = HealthFactory(useHealthConnectIfAvailable: true);
     await Permission.activityRecognition.request();
     await Permission.location.request();
+    await Permission.notification.request();
     await h.requestAuthorization(types);
     await h.requestAuthorization(types, permissions: permissions);
     setState(() {
@@ -99,6 +100,63 @@ class _LayoutLandingState extends State<LayoutLanding> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: onGoingSession != null
+          ? Padding(
+              padding: const EdgeInsets.only(bottom: 32),
+              child: ActionSlider.dual(
+                borderWidth: 0,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: const Offset(0, 3), // changes position of shadow
+                  ),
+                ],
+                actionThresholdType: ThresholdType.release,
+                backgroundBorderRadius: BorderRadius.circular(10.0),
+                foregroundBorderRadius: BorderRadius.circular(10.0),
+                width: MediaQuery.of(context).size.width * 0.6,
+                toggleColor: Colors.blue,
+                backgroundColor: Colors.white,
+                startChild: const Text('Stop',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
+                endChild: const Text('Continue',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
+                successIcon: const Icon(Icons.check, color: Colors.white),
+                failureIcon: const Icon(Icons.close, color: Colors.white),
+                icon: Padding(
+                  padding: const EdgeInsets.only(right: 0.0),
+                  child: Transform.rotate(
+                      angle: 0.5 * 3.14,
+                      child: const Icon(Icons.stop,
+                          color: Colors.white, size: 18.0)),
+                ),
+                startAction: (controller) async {
+                  controller.success(); //starts success animation
+                  await Future.delayed(const Duration(seconds: 1));
+                  setState(() {
+                    onGoingSession = null;
+                  });
+                  controller.reset();
+                },
+                endAction: (controller) async {
+                  controller.success(); //starts success animation
+                  await Future.delayed(const Duration(seconds: 1));
+                  // ignore: use_build_context_synchronously
+                  Navigator.push(context, CupertinoPageRoute(
+                    builder: (context) {
+                      return s.Session(
+                          selectedBodyParts: const [],
+                          onGoingSession: onGoingSession);
+                    },
+                  )).then(handleSessionReturn);
+                  controller.reset();
+                },
+              ),
+            )
+          : Container(),
       body: RefreshIndicator(
         onRefresh: () async {
           List<Session> li = await Session.sessions();
@@ -222,54 +280,6 @@ class _LayoutLandingState extends State<LayoutLanding> {
                 ],
               ),
             ),
-            Positioned(
-              bottom: 10,
-              left: MediaQuery.of(context).size.width * 0.2,
-              child: onGoingSession != null
-                  ? ActionSlider.dual(
-                      actionThresholdType: ThresholdType.release,
-                      backgroundBorderRadius: BorderRadius.circular(10.0),
-                      foregroundBorderRadius: BorderRadius.circular(10.0),
-                      width: MediaQuery.of(context).size.width * 0.6,
-                      toggleColor: Colors.blue,
-                      backgroundColor: Colors.white,
-                      startChild: const Text('Stop',
-                          style: TextStyle(fontWeight: FontWeight.w700)),
-                      endChild: const Text('Continue',
-                          style: TextStyle(fontWeight: FontWeight.w700)),
-                      successIcon: const Icon(Icons.check, color: Colors.white),
-                      failureIcon: const Icon(Icons.close, color: Colors.white),
-                      icon: Padding(
-                        padding: const EdgeInsets.only(right: 0.0),
-                        child: Transform.rotate(
-                            angle: 0.5 * 3.14,
-                            child: const Icon(Icons.stop,
-                                color: Colors.white, size: 18.0)),
-                      ),
-                      startAction: (controller) async {
-                        controller.success(); //starts success animation
-                        await Future.delayed(const Duration(seconds: 1));
-                        setState(() {
-                          onGoingSession = null;
-                        });
-                        controller.reset();
-                      },
-                      endAction: (controller) async {
-                        controller.success(); //starts success animation
-                        await Future.delayed(const Duration(seconds: 1));
-                        // ignore: use_build_context_synchronously
-                        Navigator.push(context, CupertinoPageRoute(
-                          builder: (context) {
-                            return s.Session(
-                                selectedBodyParts: const [],
-                                onGoingSession: onGoingSession);
-                          },
-                        )).then(handleSessionReturn);
-                        controller.reset();
-                      },
-                    )
-                  : Container(),
-            )
           ],
         )),
       ),

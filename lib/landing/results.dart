@@ -4,6 +4,7 @@ import 'package:flutter_application_1/landing/layout.dart';
 
 import '../database.dart';
 import '../excercise.dart';
+import '../history.dart';
 import '../main.dart';
 
 class PostSessionResults extends StatefulWidget {
@@ -355,6 +356,51 @@ class _LatestWorkoutState extends State<LatestWorkout> {
                       ? offsetPercentage[index]
                       : 0.0;
                   return ListTile(
+                    onTap: () {
+                      showModalBottomSheet(
+                          context: context,
+                          builder: (context) {
+                            return StatefulBuilder(
+                                builder: (context, updateState) {
+                              return Container(
+                                padding: const EdgeInsets.only(top: 16),
+                                height: 440,
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      width: 35,
+                                      decoration: BoxDecoration(
+                                          color: Colors.grey[600],
+                                          borderRadius:
+                                              BorderRadius.circular(15)),
+                                      height: 3.5,
+                                    ),
+                                    const SizedBox(
+                                      height: 32,
+                                    ),
+                                    const Text(
+                                      'History',
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Divider(
+                                      height: 32,
+                                      color: Colors.grey[400],
+                                    ),
+                                    SizedBox(
+                                      height: 300,
+                                      child: ExcerciseHistoryWidget(
+                                        excercise: session
+                                            .excerciseInfo![index].excercise,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            });
+                          });
+                    },
                     trailing: Column(
                       children: [
                         Icon(

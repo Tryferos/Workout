@@ -136,15 +136,6 @@ class _SessionState extends State<Session> {
                 ),
               ],
             ),
-            actions: const [
-              // IconButton(
-              //   icon: const Icon(Icons.stop, color: Colors.white),
-              //   onPressed: () {
-              //     // Navigator.of(context).pop();
-              //     showAlertDialog(context, excerciseInfo, duration.inSeconds);
-              //   },
-              // ),
-            ],
             bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(45),
                 child: Column(

@@ -174,10 +174,13 @@ class _BodyPartState extends State<BodyPart> {
                       }),
                 );
               }
-              return const Center(
-                  child: CircularProgressIndicator(
-                color: Colors.white,
-              ));
+              return SizedBox(
+                height: MediaQuery.of(context).size.height * 0.6,
+                child: const Center(
+                    child: CircularProgressIndicator(
+                  color: Colors.blue,
+                )),
+              );
             },
             future: futureBodyPartData),
         Container(
