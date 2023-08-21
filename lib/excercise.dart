@@ -186,7 +186,7 @@ class _ExcerciseWidgetState extends State<ExcerciseWidget> {
               excercise: excerciseInfo)
           : currentIndex == 2
               ? ExcerciseHistoryWidget(
-                  excercise: excercise,
+                  excercise: [excercise],
                 )
               : NotesWidget(name: excercise.name),
     );

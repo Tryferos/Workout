@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/database.dart';
 import 'package:flutter_application_1/excercise.dart';
+import 'package:flutter_application_1/history.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -228,6 +229,7 @@ class _SparkWidgetState extends State<SparkWidget> {
   TimeOffset selectedTimeOffset = TimeOffset.w;
   List<ExcerciseChart> list = [];
   String? selectedExcerciseName;
+  Excercise? selectedExcercise;
   String? selectedExcerciseCategory;
   @override
   setState(void Function() fn) {
@@ -262,6 +264,12 @@ class _SparkWidgetState extends State<SparkWidget> {
         selectedExcerciseCategory = 'Dumbbell';
       });
     });
+    if (selectedExcerciseName == null) return;
+    ExcerciseInfo.fetchExcercise(selectedExcerciseName!).then((value) {
+      setState(() {
+        selectedExcercise = value;
+      });
+    });
   }
 
   @override
@@ -275,6 +283,11 @@ class _SparkWidgetState extends State<SparkWidget> {
     setState(() {
       selectedExcerciseName = exc;
       selectedExcerciseCategory = category;
+    });
+    ExcerciseInfo.fetchExcercise(exc).then((value) {
+      setState(() {
+        selectedExcercise = value;
+      });
     });
   }
 
@@ -305,39 +318,59 @@ class _SparkWidgetState extends State<SparkWidget> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                TextButton(
-                                    onPressed: () {
-                                      showModalBottomSheet(
-                                        backgroundColor: Colors.white,
-                                        elevation: 0,
-                                        context: context,
-                                        builder: (context) {
-                                          return SizedBox(
-                                              height: MediaQuery.of(context)
+                                Row(
+                                  children: [
+                                    selectedExcercise != null
+                                        ? InkWell(
+                                            onTap: () {
+                                              ShowHistory(context,
+                                                  [selectedExcercise!]);
+                                            },
+                                            child: const Icon(
+                                              Icons.history,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : const SizedBox(),
+                                    TextButton(
+                                        onPressed: () {
+                                          showModalBottomSheet(
+                                            backgroundColor: Colors.white,
+                                            elevation: 0,
+                                            context: context,
+                                            builder: (context) {
+                                              return SizedBox(
+                                                  height: MediaQuery.of(context)
                                                       .size
-                                                      .height *
-                                                  (list.isEmpty
-                                                      ? 1
-                                                      : list.length + 0.5) /
-                                                  10,
-                                              width: MediaQuery.of(context)
-                                                  .size
-                                                  .width,
-                                              child: SearchExcercise(
-                                                fList: list,
-                                                handleChangeExc:
-                                                    handleChangeExc,
-                                              ));
+                                                      .height,
+                                                  width: MediaQuery.of(context)
+                                                      .size
+                                                      .width,
+                                                  child: SearchExcercise(
+                                                    fList: list,
+                                                    handleChangeExc:
+                                                        handleChangeExc,
+                                                  ));
+                                            },
+                                          );
                                         },
-                                      );
-                                    },
-                                    child: Text(
-                                        selectedExcerciseName ??
-                                            'Select an Excercise',
-                                        style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16))),
+                                        child: Text(
+                                            (selectedExcerciseName ??
+                                                    'Select an Excercise')
+                                                .split(' ')
+                                                .sublist(
+                                                    0,
+                                                    min(
+                                                        selectedExcerciseName!
+                                                            .length,
+                                                        2))
+                                                .join(' '),
+                                            style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16))),
+                                  ],
+                                ),
                                 TimeOffsetWidget(
                                     currentOffset: selectedTimeOffset,
                                     change: handleChange),
@@ -407,12 +440,31 @@ class _SearchExcerciseState extends State<SearchExcercise> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12),
-      child: SingleChildScrollView(
-          padding: const EdgeInsets.only(top: 0),
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height *
-                (widget.fList.isEmpty ? 1 : widget.fList.length + 0.5) /
-                10,
+      child: Column(
+        children: [
+          Column(
+            children: [
+              Container(
+                width: 35,
+                decoration: BoxDecoration(
+                    color: Colors.grey[600],
+                    borderRadius: BorderRadius.circular(15)),
+                height: 3.5,
+              ),
+              const SizedBox(
+                height: 32,
+              ),
+              const Text(
+                'Select an Excercise',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 24,
+          ),
+          SizedBox(
+            height: 350,
             child: FutureBuilder(
               future: list,
               builder: (context, snapshot) {
@@ -422,15 +474,6 @@ class _SearchExcerciseState extends State<SearchExcercise> {
                     scrollDirection: Axis.vertical,
                     shrinkWrap: true,
                     children: [
-                      const Center(
-                          child: Text(
-                        'Select an Excercise',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 16),
-                      )),
-                      const SizedBox(
-                        height: 10,
-                      ),
                       if (snapshot.data!.isEmpty)
                         const Center(child: Text('No excercises found...')),
                       ...snapshot.data!.map((excercise) {
@@ -475,7 +518,9 @@ class _SearchExcerciseState extends State<SearchExcercise> {
                 );
               },
             ),
-          )),
+          ),
+        ],
+      ),
     );
   }
 }

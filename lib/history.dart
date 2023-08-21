@@ -8,14 +8,14 @@ class ExcerciseHistoryWidget extends StatefulWidget {
     required this.excercise,
   });
 
-  final Excercise excercise;
+  final List<Excercise> excercise;
 
   @override
   State<ExcerciseHistoryWidget> createState() => _ExcerciseHistoryWidgetState();
 }
 
 class _ExcerciseHistoryWidgetState extends State<ExcerciseHistoryWidget> {
-  Excercise get excercise => widget.excercise;
+  List<Excercise> get excercise => widget.excercise;
   Future<List<ExcerciseHistory>>? list;
   @override
   void initState() {
@@ -24,8 +24,12 @@ class _ExcerciseHistoryWidgetState extends State<ExcerciseHistoryWidget> {
   }
 
   void getHistory() async {
-    List<ExcerciseHistory> tmp =
-        await ExcerciseInfo.excercisesInfoHistory(excercise.name);
+    List<ExcerciseHistory> tmp = [];
+    for (var i = 0; i < excercise.length; i++) {
+      List<ExcerciseHistory> history =
+          await ExcerciseInfo.excercisesInfoHistory(excercise[i].name);
+      tmp.addAll(history);
+    }
     tmp.sort((a, b) => b.date.compareTo(a.date));
     setState(() {
       list = Future.value(tmp);
@@ -47,7 +51,7 @@ class _ExcerciseHistoryWidgetState extends State<ExcerciseHistoryWidget> {
                 itemBuilder: (context, index) {
                   if (index >= snapshot.data!.length) return null;
                   return ExcerciseHistoryItem(
-                      history: snapshot.data![index], name: excercise.name);
+                      history: snapshot.data![index], name: excercise[0].name);
                 });
           }
           return const Center(child: CircularProgressIndicator());
@@ -206,4 +210,45 @@ class _ExcerciseHistoryItemState extends State<ExcerciseHistoryItem> {
       ),
     );
   }
+}
+
+void ShowHistory(BuildContext context, List<Excercise> excercise) {
+  showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, updateState) {
+          return Container(
+            padding: const EdgeInsets.only(top: 16),
+            height: 440,
+            child: Column(
+              children: [
+                Container(
+                  width: 35,
+                  decoration: BoxDecoration(
+                      color: Colors.grey[600],
+                      borderRadius: BorderRadius.circular(15)),
+                  height: 3.5,
+                ),
+                const SizedBox(
+                  height: 32,
+                ),
+                const Text(
+                  'History',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Divider(
+                  height: 32,
+                  color: Colors.grey[400],
+                ),
+                SizedBox(
+                  height: 300,
+                  child: ExcerciseHistoryWidget(
+                    excercise: excercise,
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
+      });
 }

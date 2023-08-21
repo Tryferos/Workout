@@ -199,10 +199,10 @@ class _BodyPartState extends State<BodyPart> {
               failureIcon: const Icon(Icons.close, color: Colors.white),
               action: (controller) async {
                 controller.loading(); //starts loading animation
-                await Future.delayed(const Duration(seconds: 3));
+                await Future.delayed(const Duration(seconds: 2));
                 if (excerciseInfo.isEmpty) {
                   controller.failure();
-                  await Future.delayed(const Duration(seconds: 2));
+                  await Future.delayed(const Duration(seconds: 1));
                   controller.reset();
                   return;
                 }
