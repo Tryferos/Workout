@@ -11,12 +11,14 @@ class PostSessionResults extends StatefulWidget {
   const PostSessionResults(
       {super.key,
       required this.session,
+      this.viewOnly,
       required this.bodyParts,
       required this.onGoingSession});
 
   final List<BodyPartData> bodyParts;
 
   final bool onGoingSession;
+  final bool? viewOnly;
 
   final Session session;
 
@@ -74,6 +76,10 @@ class _PostSessionResultsState extends State<PostSessionResults> {
             leading: BackButton(
               color: Colors.white,
               onPressed: () {
+                if (widget.viewOnly != null && widget.viewOnly!) {
+                  Navigator.of(context).pop();
+                  return;
+                }
                 if (!widget.onGoingSession) {
                   Navigator.of(context).pop();
                 }

@@ -222,7 +222,7 @@ class _LayoutLandingState extends State<LayoutLanding> {
                     health: health,
                   ),
                   const SizedBox(
-                    height: 40,
+                    height: 20,
                   ),
                   SparkWidget(refresh: refresh),
                   const SizedBox(

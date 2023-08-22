@@ -2,8 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/landing/results.dart';
 import 'package:flutter_application_1/main.dart';
 
+import '../bodyPart.dart';
 import '../database.dart';
 
 class AllWorkouts extends StatefulWidget {
@@ -17,6 +19,7 @@ class AllWorkouts extends StatefulWidget {
 
 class _AllWorkoutsState extends State<AllWorkouts> {
   List<String> bodyPartsTotal = [];
+  List<BodyPartData> bodyPartsData = [];
   @override
   void initState() {
     super.initState();
@@ -28,7 +31,15 @@ class _AllWorkoutsState extends State<AllWorkouts> {
             .map((element) => element.excercise.bodyPart)
             .toList()
             .forEach((element) {
-          if (!bodyParts.contains(element)) bodyParts.add(element);
+          if (!bodyParts.contains(element)) {
+            bodyParts.add(element);
+            bodyPartsData.add(BodyPartData(
+                bodyPart: element,
+                excercises: sessions[i]
+                    .excerciseInfo!
+                    .map((item) => item.excercise)
+                    .toList()));
+          }
         });
         bodyPartsTotal.add(bodyParts.join(', '));
       }
@@ -91,6 +102,16 @@ class _AllWorkoutsState extends State<AllWorkouts> {
                         offset: Offset.fromDirection(3, 40),
                         onSelected: (item) async {
                           if (item == 0) {
+                            Navigator.push(
+                                context,
+                                CupertinoPageRoute(
+                                    fullscreenDialog: true,
+                                    builder: (context) => PostSessionResults(
+                                          session: sessions[i],
+                                          bodyParts: bodyPartsData,
+                                          viewOnly: true,
+                                          onGoingSession: true,
+                                        )));
                             return;
                           }
                           (await database)!.delete('Session',
@@ -138,6 +159,7 @@ class RecentWorkouts extends StatefulWidget {
 
 class _RecentWorkoutsState extends State<RecentWorkouts> {
   List<String> bodyPartsTotal = [];
+  List<BodyPartData> bodyPartsData = [];
 
   @override
   void didUpdateWidget(RecentWorkouts oldWidget) {
@@ -150,7 +172,15 @@ class _RecentWorkoutsState extends State<RecentWorkouts> {
             .map((element) => element.excercise.bodyPart)
             .toList()
             .forEach((element) {
-          if (!bodyParts.contains(element)) bodyParts.add(element);
+          if (!bodyParts.contains(element)) {
+            bodyParts.add(element);
+            bodyPartsData.add(BodyPartData(
+                bodyPart: element,
+                excercises: sessions[i]
+                    .excerciseInfo!
+                    .map((item) => item.excercise)
+                    .toList()));
+          }
         });
         bodyPartsTotal.add(bodyParts.join(', '));
       }
@@ -222,6 +252,16 @@ class _RecentWorkoutsState extends State<RecentWorkouts> {
                   PopupMenuButton<int>(
                     onSelected: (item) async {
                       if (item == 0) {
+                        Navigator.push(
+                            context,
+                            CupertinoPageRoute(
+                                fullscreenDialog: true,
+                                builder: (context) => PostSessionResults(
+                                      session: sessions[i],
+                                      viewOnly: true,
+                                      bodyParts: bodyPartsData,
+                                      onGoingSession: true,
+                                    )));
                         return;
                       }
                       (await database)!.delete('Session',

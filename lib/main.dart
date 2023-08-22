@@ -95,6 +95,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'Workout',
       theme: ThemeData(
+        fontFamily: 'Wotfard',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
         useMaterial3: true,
       ),

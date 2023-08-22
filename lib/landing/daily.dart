@@ -130,7 +130,7 @@ class _DailyStatsState extends State<DailyStats> {
           color: Colors.grey,
         ),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Box(
               label: 'Steps walked',
