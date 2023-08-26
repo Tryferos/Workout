@@ -554,7 +554,9 @@ class _AddExcerciseWidgetState extends State<AddExcerciseWidget> {
                   excercise.bodyPart,
                   style: TextStyle(color: Colors.grey[600], fontSize: 14),
                 ),
-                leading: Image.network(excercise.getIconUrlColored),
+                leading: Image.network(
+                  excercise.getIconUrlColored,
+                ),
               );
             },
             showSelectedItems: false,

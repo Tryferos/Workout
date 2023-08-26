@@ -501,7 +501,18 @@ class _SearchExcerciseState extends State<SearchExcercise> {
                           subtitle: Text(excercise.getCategory),
                           leading: Hero(
                             tag: 'excerciseIcon${excercise.name}',
-                            child: Image.network(excercise.getIconUrlColored),
+                            child: Image.network(excercise.getIconUrlColored,
+                                fit: BoxFit.cover, loadingBuilder:
+                                    (context, child, loadingProgress) {
+                              if (loadingProgress == null) {
+                                return child;
+                              }
+                              return const Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.blue,
+                                ),
+                              );
+                            }),
                           ),
                           shape: const Border(
                             bottom: BorderSide(color: Colors.grey, width: 0.3),

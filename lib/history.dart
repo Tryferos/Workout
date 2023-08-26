@@ -41,6 +41,10 @@ class _ExcerciseHistoryWidgetState extends State<ExcerciseHistoryWidget> {
     return FutureBuilder<List<ExcerciseHistory>>(
         builder: (context, snapshot) {
           if (snapshot.hasData) {
+            if (snapshot.data!.isEmpty) {
+              return const Center(
+                  child: Text('No history found for this excercise.'));
+            }
             return ListView.separated(
                 addAutomaticKeepAlives: false,
                 itemCount: snapshot.data!.length + 1,

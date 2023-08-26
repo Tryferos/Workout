@@ -346,7 +346,18 @@ class _ExcerciseInputsState extends State<ExcerciseInputs> {
                   tag: 'excerciseIcon${excercise.excercise.name}',
                   child: SizedBox(
                     height: 175,
-                    child: Image.network(excercise.excercise.getIconUrlColored),
+                    child: Image.network(excercise.excercise.getIconUrlColored,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) {
+                        return child;
+                      }
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.blue,
+                        ),
+                      );
+                    }),
                   ),
                 ),
                 const Padding(padding: EdgeInsets.only(top: 20)),

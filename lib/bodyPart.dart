@@ -195,7 +195,20 @@ class _BodyPartState extends State<BodyPart> {
                               .map((excercise) => Hero(
                                     tag: 'excerciseIcon${excercise.name}',
                                     child: Image.network(
-                                        excercise.getIconUrlColored),
+                                      excercise.getIconUrlColored,
+                                      fit: BoxFit.cover,
+                                      loadingBuilder:
+                                          (context, child, loadingProgress) {
+                                        if (loadingProgress == null) {
+                                          return child;
+                                        }
+                                        return const Center(
+                                          child: CircularProgressIndicator(
+                                            color: Colors.blue,
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   ))
                               .toList(), // required
                           textStyle: const TextStyle(

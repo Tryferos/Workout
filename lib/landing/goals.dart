@@ -838,11 +838,12 @@ class SingleExcerciseGoal extends Goal {
                   child: const Icon(Icons.check, color: Colors.green)),
             ),
       leading: Image.network(
-          scale: 32,
-          excercise.iconUrl
-              .replaceFirst('silhouettes', 'illustrations')
-              .replaceAll('png', 'jpg')
-              .replaceAll('256', '1000')),
+        scale: 32,
+        excercise.iconUrl
+            .replaceFirst('silhouettes', 'illustrations')
+            .replaceAll('png', 'jpg')
+            .replaceAll('256', '1000'),
+      ),
     );
   }
 
