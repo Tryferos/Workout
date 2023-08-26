@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/database.dart';
 import 'package:flutter_application_1/landing/layout.dart';
+import 'package:flutter_application_1/profile/privacy.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -94,16 +95,21 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Workout',
+      routes: {
+        PrivacyPolicy.routeName: (context) => const PrivacyPolicy(),
+        LayoutLanding.routeName: (context) => const LayoutLanding()
+      },
       theme: ThemeData(
         fontFamily: 'Wotfard',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
         useMaterial3: true,
       ),
       home: Scaffold(
-          backgroundColor: loading ? Colors.white : Colors.transparent,
+          backgroundColor: loading ? Colors.white : Colors.blue,
           appBar: AppBar(
+            toolbarHeight: loading ? kToolbarHeight : 0,
             surfaceTintColor: Colors.transparent,
-            foregroundColor: Colors.black,
+            foregroundColor: Colors.white,
             backgroundColor: Colors.transparent,
             title: loading
                 ? const Text('Workout',
@@ -116,12 +122,16 @@ class _MyAppState extends State<MyApp> {
           ),
           extendBodyBehindAppBar: true,
           body: loading
-              ? Center(
-                  child: CircularProgressIndicator(
-                  backgroundColor: Colors.grey[300],
-                  color: Colors.blue,
-                ))
-              : const LayoutLanding()),
+              ? SafeArea(
+                  child: Center(
+                      child: CircularProgressIndicator(
+                    backgroundColor: Colors.grey[300],
+                    color: Colors.blue,
+                  )),
+                )
+              : const SafeArea(
+                  child: LayoutLanding(),
+                )),
     );
   }
 }

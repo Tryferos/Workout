@@ -105,7 +105,7 @@ class _AllWorkoutsState extends State<AllWorkouts> {
                             Navigator.push(
                                 context,
                                 CupertinoPageRoute(
-                                    fullscreenDialog: true,
+                                    fullscreenDialog: false,
                                     builder: (context) => PostSessionResults(
                                           session: sessions[i],
                                           bodyParts: bodyPartsData,
@@ -255,7 +255,7 @@ class _RecentWorkoutsState extends State<RecentWorkouts> {
                         Navigator.push(
                             context,
                             CupertinoPageRoute(
-                                fullscreenDialog: true,
+                                fullscreenDialog: false,
                                 builder: (context) => PostSessionResults(
                                       session: sessions[i],
                                       viewOnly: true,

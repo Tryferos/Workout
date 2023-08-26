@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/database.dart' as db;
 import 'package:flutter_application_1/excercise.dart' as Excercise_Package;
 import 'package:http/http.dart' as http;
+import 'package:vertical_card_pager/vertical_card_pager.dart';
 
 import 'excercise.dart';
 import 'landing/results.dart';
@@ -145,87 +146,178 @@ class _BodyPartState extends State<BodyPart> {
   Duration get duration => widget.duration;
   List<ExcerciseInfo> get excerciseInfo => widget.excerciseInfo;
   String get title => widget.title;
+  int index = 2;
+  List<Excercise> applied = [];
+  Excercise? sl;
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        FutureBuilder<BodyPartData>(
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Expanded(
-                  child: ListView.builder(
-                      cacheExtent: 2000,
-                      itemBuilder: (context, index) {
-                        if (index >= snapshot.data!.excercises.length) {
-                          return null;
-                        }
-                        return ExcerciseListItem(
-                            addExcerciseInfo: addExcerciseInfo,
-                            excerciseInfo: excerciseInfo.firstWhere(
-                                (element) =>
-                                    element.excercise.getName ==
-                                    snapshot.data!.getExcercises[index].getName,
-                                orElse: () => ExcerciseInfo(
-                                    excercise:
-                                        snapshot.data!.getExcercises[index],
-                                    sets: [])),
-                            duration: duration,
-                            excercise: snapshot.data!.getExcercises[index]);
-                      }),
-                );
-              }
-              return SizedBox(
-                height: MediaQuery.of(context).size.height * 0.6,
-                child: const Center(
-                    child: CircularProgressIndicator(
-                  color: Colors.blue,
-                )),
-              );
-            },
-            future: futureBodyPartData),
-        Container(
-          color: Colors.white,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-            child: ActionSlider.standard(
-              sliderBehavior: SliderBehavior.stretch,
-              width: 300.0,
-              backgroundColor: Colors.white,
-              toggleColor: Colors.blue,
-              icon: const Icon(Icons.arrow_forward_ios, color: Colors.white),
-              loadingIcon: const CircularProgressIndicator(
-                  color: Colors.white, strokeWidth: 2),
-              successIcon: const Icon(Icons.check, color: Colors.white),
-              failureIcon: const Icon(Icons.close, color: Colors.white),
-              action: (controller) async {
-                controller.loading(); //starts loading animation
-                await Future.delayed(const Duration(seconds: 2));
-                if (excerciseInfo.isEmpty) {
-                  controller.failure();
-                  await Future.delayed(const Duration(seconds: 1));
-                  controller.reset();
-                  return;
+    return SafeArea(
+      child: Column(
+        children: [
+          const SizedBox(
+            height: 0,
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+            decoration: const BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(0)),
+                color: Colors.blue),
+            child: Row(
+              mainAxisAlignment: (sl != null && applied.contains(sl!))
+                  ? MainAxisAlignment.spaceBetween
+                  : MainAxisAlignment.center,
+              children: [
+                Text(sl != null ? sl!.name : '',
+                    style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white)),
+                (sl != null && applied.contains(sl!))
+                    ? const Icon(
+                        Icons.check,
+                        size: 32,
+                        color: Colors.white,
+                      )
+                    : const SizedBox(),
+              ],
+            ),
+          ),
+          FutureBuilder<BodyPartData>(
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return Expanded(
+                    child: Container(
+                      child: VerticalCardPager(
+                          titles: snapshot.data!.getExcercises
+                              .map((item) => '')
+                              .toList(), // required
+                          images: snapshot.data!.getExcercises
+                              .map((excercise) => Hero(
+                                    tag: 'excerciseIcon${excercise.name}',
+                                    child: Image.network(
+                                        excercise.getIconUrlColored),
+                                  ))
+                              .toList(), // required
+                          textStyle: const TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.w400,
+                              fontSize: 12), // optional
+                          onPageChanged: (page) {
+                            setState(() {
+                              sl = snapshot.data!.getExcercises[page!.toInt()];
+                            });
+                          },
+                          onSelectedItem: (index) {
+                            Navigator.of(context).push(CupertinoPageRoute(
+                                fullscreenDialog: true,
+                                builder: (context) =>
+                                    Excercise_Package.ExcerciseWidget(
+                                      excerciseInfo: excerciseInfo.firstWhere(
+                                          (element) =>
+                                              element.excercise.getName ==
+                                              snapshot.data!
+                                                  .getExcercises[index].getName,
+                                          orElse: () => ExcerciseInfo(
+                                              excercise: snapshot
+                                                  .data!.getExcercises[index],
+                                              sets: [])),
+                                      addExcerciseInfo: addExcerciseInfo,
+                                      excercise:
+                                          snapshot.data!.excercises[index],
+                                      duration: duration,
+                                      checkApplied: (isApplied) => {
+                                        setState(() {
+                                          if (isApplied == true) {
+                                            applied.add(snapshot
+                                                .data!.excercises[index]);
+                                            return;
+                                          }
+                                          applied.remove(
+                                              snapshot.data!.excercises[index]);
+                                        })
+                                      },
+                                    )));
+                          },
+                          initialPage: 0, // optional
+                          align: ALIGN.CENTER // optional
+                          ),
+                    ),
+                  );
+                  // return Expanded(
+                  //   child: ListView.builder(
+                  //       cacheExtent: 2000,
+                  //       itemBuilder: (context, index) {
+                  //         if (index >= snapshot.data!.excercises.length) {
+                  //           return null;
+                  //         }
+                  //         return ExcerciseListItem(
+                  //             addExcerciseInfo: addExcerciseInfo,
+                  //             excerciseInfo: excerciseInfo.firstWhere(
+                  //                 (element) =>
+                  //                     element.excercise.getName ==
+                  //                     snapshot.data!.getExcercises[index].getName,
+                  //                 orElse: () => ExcerciseInfo(
+                  //                     excercise:
+                  //                         snapshot.data!.getExcercises[index],
+                  //                     sets: [])),
+                  //             duration: duration,
+                  //             excercise: snapshot.data!.getExcercises[index]);
+                  //       }),
+                  // );
                 }
-                controller.success();
-                db.Session session = db.Session(
-                    date: DateTime.now().millisecondsSinceEpoch,
-                    duration: widget.duration.inSeconds);
-                session.excerciseInfo = excerciseInfo;
-                await Future.delayed(const Duration(seconds: 1));
-                Navigator.of(context).push(CupertinoPageRoute(
-                    builder: (context) => PostSessionResults(
-                        session: session,
-                        bodyParts: widget.bodyPartDataList,
-                        onGoingSession: widget.onGoingSession)));
+                return SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.6,
+                  child: const Center(
+                      child: CircularProgressIndicator(
+                    color: Colors.blue,
+                  )),
+                );
               },
-              child: const Text(
-                'Finish your workout',
-                style: TextStyle(fontWeight: FontWeight.w500),
+              future: futureBodyPartData),
+          Container(
+            color: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+              child: ActionSlider.standard(
+                sliderBehavior: SliderBehavior.stretch,
+                width: 300.0,
+                backgroundColor: Colors.white,
+                toggleColor: Colors.blue,
+                icon: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                loadingIcon: const CircularProgressIndicator(
+                    color: Colors.white, strokeWidth: 2),
+                successIcon: const Icon(Icons.check, color: Colors.white),
+                failureIcon: const Icon(Icons.close, color: Colors.white),
+                action: (controller) async {
+                  controller.loading(); //starts loading animation
+                  await Future.delayed(const Duration(seconds: 2));
+                  if (excerciseInfo.isEmpty) {
+                    controller.failure();
+                    await Future.delayed(const Duration(seconds: 1));
+                    controller.reset();
+                    return;
+                  }
+                  controller.success();
+                  db.Session session = db.Session(
+                      date: DateTime.now().millisecondsSinceEpoch,
+                      duration: widget.duration.inSeconds);
+                  session.excerciseInfo = excerciseInfo;
+                  await Future.delayed(const Duration(seconds: 1));
+                  Navigator.of(context).push(CupertinoPageRoute(
+                      builder: (context) => PostSessionResults(
+                          session: session,
+                          bodyParts: widget.bodyPartDataList,
+                          onGoingSession: widget.onGoingSession)));
+                },
+                child: const Text(
+                  'Finish your workout',
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -241,16 +333,33 @@ class _BodyPartState extends State<BodyPart> {
     }
   }
 
+  Future<BodyPartData> getData() async {
+    BodyPartData? data;
+    if (bodyPartData == null ||
+        bodyPartData!.getBodyPart != title ||
+        bodyPartData!.getExcercises.isEmpty) {
+      data = await fetchBodyPartData();
+    } else {
+      data = bodyPartData;
+    }
+    if (sl == null && data != null && data.excercises.isNotEmpty) {
+      setState(() {
+        sl = data!.excercises[0];
+      });
+    }
+    return data!;
+  }
+
   @override
   void initState() {
     super.initState();
     if (bodyPartData == null ||
         bodyPartData!.getBodyPart != title ||
         bodyPartData!.getExcercises.isEmpty) {
-      futureBodyPartData = fetchBodyPartData();
+      futureBodyPartData = getData();
       return;
     } else {
-      futureBodyPartData = Future.value(bodyPartData);
+      futureBodyPartData = Future.value(getData());
     }
   }
 }

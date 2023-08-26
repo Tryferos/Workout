@@ -232,6 +232,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
+  horizontal_card_pager:
+    dependency: "direct main"
+    description:
+      name: horizontal_card_pager
+      sha256: "3d89054553d793371ed9108bfd60398c565ee91184a8845ba0183f28ab3be199"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
   http:
     dependency: "direct main"
     description:
@@ -565,6 +573,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
+  vertical_card_pager:
+    dependency: "direct main"
+    description:
+      name: vertical_card_pager
+      sha256: "204ee6ea1fda27a1e02fde920e4238779f0e39bb4ed6ccbb82c9e2781251670f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.5.0"
   vertical_weight_slider:
     dependency: "direct main"
     description:

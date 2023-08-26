@@ -160,15 +160,29 @@ class _ProfilingWidgetState extends State<ProfilingWidget> {
             alignment: Alignment.center,
             children: [
               Positioned(
-                  right: 0,
-                  top: -10,
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.more_vert_outlined,
-                      color: Colors.black,
+                right: 0,
+                top: -10,
+                child: Stack(
+                  children: [
+                    PopupMenuButton<int>(
+                      onSelected: (item) async {
+                        if (item == 1) {
+                          Navigator.pushNamed(context, '/privacy-policy');
+                        } else if (item == 0) {
+                          Navigator.pushNamed(context, '/settings');
+                        }
+                      },
+                      offset: Offset.fromDirection(3, 40),
+                      itemBuilder: (context) => [
+                        const PopupMenuItem<int>(
+                            value: 0, child: Text('Settngs')),
+                        const PopupMenuItem<int>(
+                            value: 1, child: Text('Privacy Policy')),
+                      ],
                     ),
-                    onPressed: () {},
-                  )),
+                  ],
+                ),
+              ),
               Column(
                 children: [
                   Stack(

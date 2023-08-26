@@ -122,7 +122,7 @@ class _SessionState extends State<Session> {
       child: Scaffold(
           appBar: AppBar(
             toolbarHeight: 100,
-            elevation: 2,
+            elevation: 0,
             centerTitle: true,
             title: Column(
               children: [
